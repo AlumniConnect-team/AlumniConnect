@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   return (
@@ -11,12 +12,10 @@ const Navbar = () => {
       {/* Links */}
       <ul className="list-none flex gap-[100px] m-0 p-0 max-md:hidden">
         <li>
-          <a
-            href="#"
-            className="no-underline text-gray-800 font-semibold text-[16px] transition-colors duration-300 hover:text-blue-600"
-          >
-            Home
-          </a>
+          
+            <Link to="/" className="no-underline text-gray-800 font-semibold text-[16px] transition-colors duration-300 hover:text-blue-600">Home</Link>
+           
+          
         </li>
         <li>
           <a
@@ -47,11 +46,13 @@ const Navbar = () => {
       {/* Buttons */}
       <div className="flex gap-[15px] max-md:hidden">
         <button className="px-[24px] py-[10px] rounded-md font-semibold text-[14px] border-2 border-blue-600 text-blue-600 bg-transparent transition-all duration-300 hover:bg-blue-50">
-          Login
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                      Login
+                    </Link>
         </button>
 
         <button className="px-[24px] py-[10px] rounded-md font-semibold text-[14px] border-2 border-blue-600 bg-blue-600 text-white shadow-md transition-all duration-300 hover:bg-blue-700 hover:-translate-y-[1px]">
-          Join Network
+          <Link to="/signup">Join Network</Link>
         </button>
       </div>
     </nav>
