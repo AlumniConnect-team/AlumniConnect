@@ -1,17 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-const Login = () => {
+const Signup = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
-          Welcome Back
+          Join the Alumni Network
         </h2>
         <p className="mt-2 text-center text-sm text-slate-600">
-          Don't have an account?{' '}
-          <Link to="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-            Create one today
+          Already have an account?{' '}
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            Sign in
           </Link>
         </p>
       </div>
@@ -20,36 +20,37 @@ const Login = () => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-slate-200">
           <form className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-slate-700">Email address</label>
+              <label className="block text-sm font-medium text-slate-700">Full Name</label>
               <input 
-                type="email" 
-                required
+                type="text" 
                 className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
-                placeholder="you@example.com"
+                placeholder="John Doe"
               />
             </div>
 
             <div>
-              <div className="flex items-center justify-between">
-                <label className="block text-sm font-medium text-slate-700">Password</label>
-                <div className="text-sm">
-                  <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                    Forgot password?
-                  </a>
-                </div>
-              </div>
+              <label className="block text-sm font-medium text-slate-700">Graduation Year</label>
               <input 
-                type="password" 
-                required
+                type="number" 
+                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                placeholder="2024"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Email address</label>
+              <input 
+                type="email" 
                 className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
               />
             </div>
 
-            <div className="flex items-center">
-              <input id="remember-me" type="checkbox" className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-slate-900">
-                Remember me
-              </label>
+            <div>
+              <label className="block text-sm font-medium text-slate-700">Password</label>
+              <input 
+                type="password" 
+                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+              />
             </div>
 
             <div>
@@ -57,7 +58,7 @@ const Login = () => {
                 type="submit" 
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
-                Sign In
+                Create Account
               </button>
             </div>
           </form>
@@ -74,8 +75,9 @@ const Login = () => {
 
             <div className="mt-6">
               <button className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-500 hover:bg-slate-50">
+                <span className="sr-only">Sign in with Google</span>
                 <img className="h-5 w-5" src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
-                <span className="ml-2">Sign in with Google</span>
+                <span className="ml-2">Google</span>
               </button>
             </div>
           </div>
@@ -85,4 +87,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Signup;
