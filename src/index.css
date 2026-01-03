@@ -1,28 +1,28 @@
 @import "tailwindcss";
-:root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
 
-  color: #1f2937; 
-  background-color: #f4f7f6; 
-}
 @theme {
+  /* This defines your custom colors for v4 */
   --color-pink-main: #ff69b4;
-}
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  min-height: 100vh;
-  display: block; 
+  --color-blue-brand: #2563eb;
 }
 
+:root {
+  font-family: 'Inter', system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1f2937;
+  background-color: #f4f7f6;
+}
+
+/* CRITICAL FIX: Remove 'color: inherit' from 'a' tags. 
+   This is why your blue text wasn't showing up! 
+   It was forcing all links to stay gray (#1f2937).
+*/
 a {
   text-decoration: none;
-  color: inherit;
 }
 
-button {
-  font-family: inherit;
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
 }
