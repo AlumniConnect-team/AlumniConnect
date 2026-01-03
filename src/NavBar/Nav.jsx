@@ -19,7 +19,7 @@ const Navbar = () => {
           <a href="#">Events</a>
         </li>
         <li>
-          <a href="#" className="bg-pink-main">Dashboard</a>
+          <a href="#" >Dashboard</a>
         </li>
       </ul>
 
