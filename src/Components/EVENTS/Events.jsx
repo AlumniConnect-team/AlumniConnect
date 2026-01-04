@@ -4,11 +4,60 @@ import { useNavigate } from "react-router-dom";
 const Events = () => {
   const [userRole, setUserRole] = useState("alumni");
   const navigate = useNavigate();
-
   const isAlumni = userRole === "alumni";
+
+  const featuredEvents = [
+    {
+      id: 1,
+      tag: "Coming Soon",
+      title: "The Grand Alumni Homecoming 2026",
+      description:
+        "A night of nostalgia, networking, and celebration. Join over 500+ alumni from across the globe returning to campus. Includes a gala dinner, keynote speeches, and department visits.",
+      image:
+        "https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      date: "Oct 15, 2026",
+    },
+    {
+      id: 2,
+      tag: "Live Webinar",
+      title: "Future of AI: Alumni Tech Summit",
+      description:
+        "Join industry leaders from Google, Microsoft, and OpenAI as they discuss the impact of Artificial Intelligence on the global workforce.",
+      image:
+        "https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      date: "Nov 02, 2026",
+    },
+    {
+      id: 3,
+      tag: "Fundraiser",
+      title: "Scholarship Gala Night",
+      description:
+        "Help the next generation of students. An elegant evening of fine dining and auctions to raise funds for underprivileged students.",
+      image:
+        "https://images.unsplash.com/photo-1519671482538-581aca121e96?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+      date: "Dec 10, 2026",
+    },
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextEvent = () => {
+    setCurrentIndex((prev) =>
+      prev === featuredEvents.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevEvent = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? featuredEvents.length - 1 : prev - 1
+    );
+  };
+
+  const currentEvent = featuredEvents[currentIndex];
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans">
+      
       <div className="fixed top-20 right-4 z-50 bg-black text-white p-2 rounded-lg text-xs opacity-80 hover:opacity-100">
         <p className="mb-1">
           Current View:{" "}
@@ -41,29 +90,54 @@ const Events = () => {
       </section>
 
       <section className="py-12 px-6 max-w-7xl mx-auto">
-        <div className="bg-[#1e293b] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[400px]">
+        <div className="flex justify-between items-end mb-6">
+          <h2 className="text-2xl font-bold text-slate-800">Featured Events</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={prevEvent}
+              className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition"
+            >
+              ←
+            </button>
+            <button
+              onClick={nextEvent}
+              className="w-10 h-10 rounded-full border border-slate-300 flex items-center justify-center hover:bg-blue-600 hover:text-white hover:border-blue-600 transition"
+            >
+              →
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-[#1e293b] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[450px]">
           <div className="md:w-1/2 relative">
             <img
-              src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80"
-              alt="Grand Reunion"
-              className="absolute inset-0 w-full h-full object-cover opacity-80 hover:opacity-100 transition duration-500"
+              key={currentEvent.id}
+              src={currentEvent.image}
+              alt={currentEvent.title}
+              className="absolute inset-0 w-full h-full object-cover opacity-80 hover:opacity-100 transition duration-500 animate-fade-in"
             />
             <div className="absolute top-4 left-4 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-bold">
-              Featured
+              {currentEvent.tag}
             </div>
           </div>
+
           <div className="md:w-1/2 p-10 flex flex-col justify-center text-white">
-            <h3 className="text-blue-400 font-bold tracking-widest uppercase text-sm mb-2">
-              Coming Soon
-            </h3>
+            <div className="flex justify-between items-center mb-2">
+              <h3 className="text-blue-400 font-bold tracking-widest uppercase text-sm">
+                Featured
+              </h3>
+              <span className="text-slate-400 text-sm border border-slate-600 px-2 py-1 rounded">
+                {currentEvent.date}
+              </span>
+            </div>
+
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              The Grand Alumni Homecoming 2026
+              {currentEvent.title}
             </h2>
             <p className="text-slate-300 mb-8 leading-relaxed">
-              A night of nostalgia, networking, and celebration. Join over 500+
-              alumni from across the globe returning to campus. Includes a gala
-              dinner, keynote speeches, and department visits.
+              {currentEvent.description}
             </p>
+
             <div className="flex gap-4">
               <button
                 onClick={() => navigate("/events/register")}
@@ -80,6 +154,17 @@ const Events = () => {
               </button>
             </div>
           </div>
+        </div>
+
+        <div className="flex justify-center gap-2 mt-6">
+          {featuredEvents.map((_, index) => (
+            <div
+              key={index}
+              className={`h-2 rounded-full transition-all duration-300 ${
+                index === currentIndex ? "w-8 bg-blue-600" : "w-2 bg-slate-300"
+              }`}
+            />
+          ))}
         </div>
       </section>
 
@@ -249,7 +334,6 @@ const Events = () => {
       {isAlumni && (
         <section className="py-24 bg-blue-600 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-64 h-64 bg-white opacity-5 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
-
           <div className="max-w-4xl mx-auto text-center px-6 relative z-10">
             <h2 className="text-4xl font-extrabold text-white mb-6">
               Have an Idea for an Event?
