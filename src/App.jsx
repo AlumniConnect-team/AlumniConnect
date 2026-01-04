@@ -15,11 +15,12 @@ function App() {
     <Router>
       <div className="min-h-screen bg-slate-50">
         <Navbar />
-        <ScrollToTop />
+
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/login" element={<Login />} />
+
           <Route path="/events">
             <Route index element={<Events />} />
             <Route path="register" element={<RegisterEventPage />} />
@@ -30,6 +31,7 @@ function App() {
             />
             <Route path="guidelines" element={<HostGuidelinesPage />} />
           </Route>
+
           <Route
             path="/search"
             element={<div className="p-10 text-2xl">Search Alumni Page</div>}
@@ -38,7 +40,6 @@ function App() {
             path="/dashboard"
             element={<div className="p-10 text-2xl">Dashboard Page</div>}
           />
-          e185cd8b634145bbc5fba94240f92ea8c8c03d0
         </Routes>
       </div>
     </Router>
