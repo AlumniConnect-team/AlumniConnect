@@ -17,6 +17,7 @@ function App() {
     <Router>
       <div className="min-h-screen bg-slate-50">
         <Navbar />
+
         <ScrollToTop />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -32,6 +33,7 @@ function App() {
             />
             <Route path="guidelines" element={<HostGuidelinesPage />} />
           </Route>
+
           <Route
             path="/search"
             element={<div className="p-10 text-2xl">Search Alumni Page</div>}
