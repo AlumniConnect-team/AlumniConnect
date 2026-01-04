@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./Components/Nav";
 import Home from "./Components/Home";
 import "./App.css";
-import Signup from "./Components/SignUp";
+import Signup from "./Components/Signup";
 import Login from "./Components/Login";
 import Events from "./Components/EVENTS/Events";
 import RegisterEventPage from "./Components/EVENTS/RegisterEventPage";
@@ -10,7 +10,7 @@ import ViewAgendaPage from "./Components/EVENTS/ViewAgendaPage";
 import SubmitEventProposalPage from "./Components/EVENTS/SubmitEventProposalPage";
 import HostGuidelinesPage from "./Components/EVENTS/HostGuidelinesPage";
 import ScrollToTop from "./Components/ScrollToTop";
-import JobReferrals from './Components/JobReferrals';
+import JobReferrals from "./Components/jobs&Referral/JobReferrals";
 
 function App() {
   return (
