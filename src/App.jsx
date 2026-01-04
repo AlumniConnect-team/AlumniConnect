@@ -9,7 +9,6 @@ function App() {
   return (
     <Router>
       <div className="min-h-screen bg-slate-50">
-        <div className="bg-blue-brand"></div>
         <Navbar /> 
         <Routes>
           <Route path="/" element={<Home />} />
