@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from "./Components/Nav"; 
 import Home from "./Components/Home";
 import './App.css';
-import Signup from './Components/SignUp';
+import Signup from './Components/Signup';
 import Login from './Components/Login';
 import Events from './Components/Events';
 import ScrollToTop from "./components/ScrollToTop";
