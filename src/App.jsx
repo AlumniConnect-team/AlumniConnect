@@ -1,11 +1,14 @@
-
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from "./Components/Nav"; 
-import Home from "./Components/Home"; // We will create this next
-import './App.css';
-import Signup from './Components/SignUp';
-import Login from './Components/Login';
-import Events from "./Components/Events";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./Components/Nav";
+import Home from "./Components/Home";
+import "./App.css";
+import Signup from "./Components/SignUp";
+import Login from "./Components/Login";
+import Events from "./Components/EVENTS/Events";
+import RegisterEventPage from "./Components/EVENTS/RegisterEventPage";
+import ViewAgendaPage from "./Components/EVENTS/ViewAgendaPage";
+import SubmitEventProposalPage from "./Components/EVENTS/SubmitEventProposalPage";
+import HostGuidelinesPage from "./Components/EVENTS/HostGuidelinesPage";
 
 function App() {
   return (
@@ -14,11 +17,28 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup/>}/>
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/search" element={<div className="p-10 text-2xl">Search Alumni Page</div>} />
-          <Route path="/dashboard" element={<div className="p-10 text-2xl">Dashboard Page</div>} />
-          <Route path="/events" element={<Events />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/events">
+            <Route index element={<Events />} />
+            <Route path="register" element={<RegisterEventPage />} />
+            <Route path="agenda" element={<ViewAgendaPage />} />
+            <Route
+              path="submit-proposal"
+              element={<SubmitEventProposalPage />}
+            />
+            <Route path="guidelines" element={<HostGuidelinesPage />} />
+          </Route>
+
+          <Route
+            path="/search"
+            element={<div className="p-10 text-2xl">Search Alumni Page</div>}
+          />
+          <Route
+            path="/dashboard"
+            element={<div className="p-10 text-2xl">Dashboard Page</div>}
+          />
         </Routes>
       </div>
     </Router>
