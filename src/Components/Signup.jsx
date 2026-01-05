@@ -7,17 +7,26 @@ const Signup = () => {
     fullName: '',
     collegeName: '',
     graduationYear: '',
-    email: '',
+    emailPrefix: '', 
+    emailDomain: '', 
     password: ''
   });
 
-  const handleCollegeSelect = (name) => {
-    setFormData({ ...formData, collegeName: name });
+  const handleCollegeSelect = (name, domain) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      collegeName: name, 
+      emailDomain: domain ? `@${domain}` : '' 
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Submitting User Data:", formData);
+    const finalData = {
+      ...formData,
+      email: `${formData.emailPrefix}${formData.emailDomain}`
+    };
+    console.log("Submitting User Data:", finalData);
   };
 
   return (
@@ -37,6 +46,7 @@ const Signup = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-slate-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            
             <div>
               <label className="block text-sm font-medium text-slate-700">Full Name</label>
               <input 
@@ -50,6 +60,31 @@ const Signup = () => {
             <div>
               <CollegeSelect onSelect={handleCollegeSelect} />
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700">College Email ID</label>
+              <div className="mt-1 flex rounded-md shadow-sm">
+                <input
+                  type="text"
+                  required
+                  placeholder="student_id"
+                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-lg border border-slate-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-r-0"
+                  onChange={(e) => setFormData({...formData, emailPrefix: e.target.value})}
+                />
+                
+                <input
+                  type="text"
+                  readOnly
+                  placeholder="@college.edu"
+                  value={formData.emailDomain}
+                  className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm w-1/2 cursor-not-allowed"
+                />
+              </div>
+              <p className="mt-1 text-xs text-slate-500">
+                Select your college above to auto-fill the domain.
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700">Graduation Year</label>
               <input 
@@ -60,15 +95,7 @@ const Signup = () => {
                 onChange={(e) => setFormData({...formData, graduationYear: e.target.value})}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700">Email address</label>
-              <input 
-                type="email" 
-                required
-                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
-                onChange={(e) => setFormData({...formData, email: e.target.value})}
-              />
-            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700">Password</label>
               <input 
@@ -88,6 +115,7 @@ const Signup = () => {
               </button>
             </div>
           </form>
+
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
