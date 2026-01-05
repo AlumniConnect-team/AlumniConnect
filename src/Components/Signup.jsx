@@ -7,23 +7,21 @@ const Signup = () => {
     fullName: '',
     collegeName: '',
     graduationYear: '',
-    emailPrefix: '', // Part before @
-    emailDomain: '', // Part after @ (auto-filled)
+    emailPrefix: '', 
+    emailDomain: '', 
     password: ''
   });
 
-  // Updated handler to receive both Name and Domain
   const handleCollegeSelect = (name, domain) => {
     setFormData(prev => ({ 
       ...prev, 
       collegeName: name, 
-      emailDomain: domain ? `@${domain}` : '' // Add @ automatically
+      emailDomain: domain ? `@${domain}` : '' 
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Combine prefix and domain for the final email
     const finalData = {
       ...formData,
       email: `${formData.emailPrefix}${formData.emailDomain}`
@@ -49,7 +47,6 @@ const Signup = () => {
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-slate-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
             
-            {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-slate-700">Full Name</label>
               <input 
@@ -60,17 +57,13 @@ const Signup = () => {
                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
               />
             </div>
-
-            {/* College Select (Auto-fills domain) */}
             <div>
               <CollegeSelect onSelect={handleCollegeSelect} />
             </div>
 
-            {/* SPLIT EMAIL FIELDS */}
             <div>
               <label className="block text-sm font-medium text-slate-700">College Email ID</label>
               <div className="mt-1 flex rounded-md shadow-sm">
-                {/* 1. User types ID */}
                 <input
                   type="text"
                   required
@@ -79,7 +72,6 @@ const Signup = () => {
                   onChange={(e) => setFormData({...formData, emailPrefix: e.target.value})}
                 />
                 
-                {/* 2. Auto-filled Domain */}
                 <input
                   type="text"
                   readOnly
@@ -93,7 +85,6 @@ const Signup = () => {
               </p>
             </div>
 
-            {/* Graduation Year */}
             <div>
               <label className="block text-sm font-medium text-slate-700">Graduation Year</label>
               <input 
@@ -105,7 +96,6 @@ const Signup = () => {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-slate-700">Password</label>
               <input 
@@ -116,7 +106,6 @@ const Signup = () => {
               />
             </div>
 
-            {/* Submit Button */}
             <div>
               <button 
                 type="submit" 
@@ -127,8 +116,7 @@ const Signup = () => {
             </div>
           </form>
 
-          {/* Social Login */}
-          {/* <div className="mt-6">
+          <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-300"></div>
@@ -144,7 +132,7 @@ const Signup = () => {
                 <span className="ml-2">Google</span>
               </button>
             </div>
-          </div> */}
+          </div>
         </div>
       </div>
     </div>

@@ -13,7 +13,6 @@ const CollegeSelect = ({ onSelect }) => {
     fetch("http://universities.hipolabs.com/search?country=India")
       .then((res) => res.json())
       .then((data) => {
-        // Sort alphabetically
         const sortedData = data.sort((a, b) => a.name.localeCompare(b.name));
         setColleges(sortedData);
         setLoading(false);
@@ -48,11 +47,8 @@ const CollegeSelect = ({ onSelect }) => {
   const handleSelect = (college) => {
     setSearch(college.name);
     setIsOpen(false);
-    
-    // EXTRACT DOMAIN: Get the first domain from the array (e.g., "iitb.ac.in")
     const domain = college.domains && college.domains.length > 0 ? college.domains[0] : "";
     
-    // Pass both Name and Domain to parent
     onSelect(college.name, domain);
   };
 
@@ -84,7 +80,6 @@ const CollegeSelect = ({ onSelect }) => {
           {filteredColleges.map((college, index) => (
             <li
               key={index}
-              // Pass the whole college object to handleSelect
               onClick={() => handleSelect(college)}
               className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-slate-800 transition-colors border-b border-slate-50 last:border-0"
             >
