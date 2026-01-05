@@ -1,10 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 
 const Home = () => {
+  const [login,setLogin] = useState(true);
+
+      const [allUsers] = useState([
+    { id: 1, name: "Sahil Verma", college: "IT Delhi", email: "sahil@example.com", gradYear: 2022 },
+    { id: 2, name: "Priya Sharma", college: "IT Delhi", email: "priya@example.com", gradYear: 2021 },
+    { id: 3, name: "Rajat Singh", college: "VIT Vellore", email: "rajat@example.com", gradYear: 2026 },
+    { id: 4, name: "Ananya Iyer", college: "IIT Bombay", email: "ananya@example.com", gradYear: 2023 },
+    { id: 5, name: "Deepak Raj", college: "IT Delhi", email: "deepak@example.com", gradYear: 2025 },
+  ]);
+
+  // 2. LOGGED IN USER (Simulating your session)
+  const currentUser = { name: "Abhilash", college: "IT Delhi" };
+
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // 3. FILTERING LOGIC
+  const filtered = allUsers.filter(u => 
+    u.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const myAlumni = filtered.filter(u => u.college === currentUser.college);
+  const otherPeople = filtered.filter(u => u.college !== currentUser.college);
+    
+
   return (
     <div className="bg-slate-50 min-h-screen font-sans">
-      {/* Hero Section */}
       <section className="relative bg-white py-24 px-6 border-b border-slate-200">
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-6">
