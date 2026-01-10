@@ -10,7 +10,7 @@ const CollegeSelect = ({ onSelect }) => {
 
   useEffect(() => {
     setLoading(true);
-    fetch("http://universities.hipolabs.com/search?country=India")
+    fetch("./CollegeData.json")
       .then((res) => res.json())
       .then((data) => {
         const sortedData = data.sort((a, b) => a.name.localeCompare(b.name));
