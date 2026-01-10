@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CollegeSelect from './CollegeSelect'; 
+import axios from 'axios';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -26,6 +27,13 @@ const Signup = () => {
       ...formData,
       email: `${formData.emailPrefix}${formData.emailDomain}`
     };
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/signup",finalData)
+    .then((res)=>{
+      console.log(res);
+    })
+    .catch(err=>{
+      console.log(err.message);
+    })
     console.log("Submitting User Data:", finalData);
   };
 
@@ -110,6 +118,7 @@ const Signup = () => {
               <button 
                 type="submit" 
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
+                
               >
                 Create Account
               </button>
