@@ -1,7 +1,45 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+ export const validatePassword = (password) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+    return regex.test(password);
+  };
+
 
 const Login = () => {
+ 
+  const [data, setdata] = useState({
+    email:'',
+    password:''
+
+  })
+  const navigate = useNavigate();
+
+ 
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const finalData = {...data}
+    if(!validatePassword(finalData.password)){
+      toast.error("Invalid Password");
+      return;
+    }else{
+      axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/login",finalData)
+      .then(res=>{
+        toast.success('authentication successful');
+        console.log(res.data);
+        navigate("/");
+      })
+      .catch(err=>{
+        toast.error('Invalid Login Credentials');
+        console.log(err);
+      });
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -18,7 +56,7 @@ const Login = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-slate-200">
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label className="block text-sm font-medium text-slate-700">Email address</label>
               <input 
@@ -26,6 +64,7 @@ const Login = () => {
                 required
                 className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
                 placeholder="you@example.com"
+                onChange={(e)=>{setdata({...data,email:e.target.value})}}
               />
             </div>
 
@@ -42,6 +81,7 @@ const Login = () => {
                 type="password" 
                 required
                 className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                onChange={(e)=>setdata({...data,password:e.target.value})}
               />
             </div>
 

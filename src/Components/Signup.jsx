@@ -1,25 +1,76 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import CollegeSelect from './CollegeSelect'; 
+import CollegeSelect from './CollegeSelect';
 import axios from 'axios';
+import { validatePassword } from './Login';
+import toast from 'react-hot-toast';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
     fullName: '',
     collegeName: '',
     graduationYear: '',
-    emailPrefix: '', 
-    emailDomain: '', 
-    password: ''
+    emailPrefix: '',
+    emailDomain: '',
+    password: '',
+    otp: '',
+    isVerified:false
   });
+  const [isOtpSent, setIsOtpSent] = useState(false);
 
   const handleCollegeSelect = (name, domain) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      collegeName: name, 
-      emailDomain: domain ? `@${domain}` : '' 
+    setFormData(prev => ({
+      ...prev,
+      collegeName: name,
+      emailDomain: domain ? `@${domain}` : ''
     }));
   };
+
+  const handleVerify = (e) => {
+    e.preventDefault();
+    e.target.setAttribute("disabled", "true");
+    if (!formData.emailPrefix.length || !formData.emailDomain.length) {
+      e.target.removeAttribute("disabled");
+      return toast.error("Select College and Enter the prefix of email first");
+    }
+    const email = `${formData.emailPrefix}${formData.emailDomain}`;
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/verify-email",{email:email})
+      .then(res=>{
+        toast.success(res.data);
+        setIsOtpSent(true);
+      })
+      .catch(err=>{
+        console.log(err);
+        const errorMessage = err.response?.data || "Something went wrong";
+        toast.error(errorMessage);
+        setIsOtpSent(false);
+      })
+    e.target.removeAttribute("disabled");
+  }
+
+  const handleOtp = (e) => {
+    e.preventDefault();
+    e.target.setAttribute("disabled", "true");
+    if(!formData.otp.length){
+      e.target.removeAttribute("disabled");
+      return toast.error("Enter valid otp");      
+    }
+    const email = `${formData.emailPrefix}${formData.emailDomain}`;
+    const payLoad = {
+      email:email,
+      otp:formData.otp
+    }
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/verify-otp",payLoad)
+    .then(res=>{
+      setFormData(prev => ({ ...prev, isVerified: true }));
+      toast.success(res.data);
+    })
+    .catch(err=>{
+      console.log(err);
+      toast.error(err.response.data);
+    })
+    e.target.removeAttribute("disabled");
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,14 +78,19 @@ const Signup = () => {
       ...formData,
       email: `${formData.emailPrefix}${formData.emailDomain}`
     };
-    axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/signup",finalData)
-    .then((res)=>{
-      console.log(res);
-    })
-    .catch(err=>{
-      console.log(err.message);
-    })
-    console.log("Submitting User Data:", finalData);
+    if (!validatePassword(finalData.password)) {
+      toast.error("Password must contain: 1 Uppercase, 1 Number, 1 Symbol")
+    } else {
+      axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/signup", finalData)
+        .then((res) => {
+          console.log(res);
+          toast.success(res.response.data);
+        })
+        .catch(err => {
+          console.log(err.message);
+          toast.error(err.response.data);
+        })
+    }
   };
 
   return (
@@ -54,15 +110,15 @@ const Signup = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-slate-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            
+
             <div>
               <label className="block text-sm font-medium text-slate-700">Full Name</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 required
-                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="John Doe"
-                onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               />
             </div>
             <div>
@@ -77,9 +133,9 @@ const Signup = () => {
                   required
                   placeholder="student_id"
                   className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-lg border border-slate-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-r-0"
-                  onChange={(e) => setFormData({...formData, emailPrefix: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, emailPrefix: e.target.value })}
                 />
-                
+
                 <input
                   type="text"
                   readOnly
@@ -87,7 +143,35 @@ const Signup = () => {
                   value={formData.emailDomain}
                   className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm w-1/2 cursor-not-allowed"
                 />
+                {!isOtpSent && !formData.isVerified && (<button className="bg-green-400 text-white" onClick={handleVerify}>Verify Email</button>)}
               </div>
+              {
+                  isOtpSent && !formData.isVerified && (
+                    <div className="mt-4 animate-fade-in-down">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">
+                        Enter One-Time Password
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter 6-digit OTP"
+                          maxLength={6}
+                          className="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                          onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
+                        />
+                        <button
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm whitespace-nowrap"
+                          onClick={handleOtp}
+                        >
+                          Confirm OTP
+                        </button>
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500">
+                        Didn't receive code? <button className="text-blue-600 hover:underline">Resend</button>
+                      </p>
+                    </div>
+                  )
+                }
               <p className="mt-1 text-xs text-slate-500">
                 Select your college above to auto-fill the domain.
               </p>
@@ -95,30 +179,30 @@ const Signup = () => {
 
             <div>
               <label className="block text-sm font-medium text-slate-700">Graduation Year</label>
-              <input 
-                type="number" 
+              <input
+                type="number"
                 required
-                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                 placeholder="2024"
-                onChange={(e) => setFormData({...formData, graduationYear: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700">Password</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 required
-                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
-                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
 
             <div>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
-                
+
               >
                 Create Account
               </button>
