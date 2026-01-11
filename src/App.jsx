@@ -11,9 +11,12 @@ import SubmitEventProposalPage from "./Components/EVENTS/SubmitEventProposalPage
 import HostGuidelinesPage from "./Components/EVENTS/HostGuidelinesPage";
 import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
+import {Toaster} from 'react-hot-toast';
 
 function App() {
   return (
+    <div>
+    <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
     <Router>
       <div className="min-h-screen bg-slate-50">
         <Navbar />
@@ -46,6 +49,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+    </div>
   );
 }
 
