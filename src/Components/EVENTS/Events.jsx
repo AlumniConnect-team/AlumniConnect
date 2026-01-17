@@ -150,7 +150,7 @@ const Events = () => {
           </div>
         </div>
 
-        <div className="bg-[#1e293b] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-[450px]">
+        <div className="bg-[#1e293b] rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row min-h-112.5">
           <div className="md:w-1/2 relative">
             <img
               key={currentEvent.id}

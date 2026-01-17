@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import { UserContext } from '../context/UserContext';
 
 
-
 const Signup = () => {
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
@@ -43,7 +42,7 @@ const Signup = () => {
     }));
   };
 
-const handleVerify = (e) => {
+  const handleVerify = (e) => {
     e.preventDefault();
     if (timer > 0) return;
     setIsLoading(true);
@@ -52,9 +51,12 @@ const handleVerify = (e) => {
     }
     const email = `${formData.emailPrefix}${formData.emailDomain}`;
 
-    axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/verify-email", {email:email})
-      .then(res => {
-        toast.success(res.data); 
+    axios
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/verify-email", {
+        email: email,
+      })
+      .then((res) => {
+        toast.success(res.data);
 
         setIsOtpSent(true);
         setTimer(30);
@@ -63,49 +65,56 @@ const handleVerify = (e) => {
 
       .catch((err) => {
         console.log(err);
-        const errorMsg = err.response?.data?.message || err.response?.data || "Something went wrong";
-        toast.error(typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg);
+        const errorMsg =
+          err.response?.data?.message ||
+          err.response?.data ||
+          "Something went wrong";
+        toast.error(
+          typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg
+        );
         setIsOtpSent(false);
         setIsLoading(false);
-      })
-  }
+      });
+  };
 
-
-const handleOtp = (e) => {
+  const handleOtp = (e) => {
     e.preventDefault();
     setIsLoading(true);
-    if(!formData.otp.length){
+    if (!formData.otp.length) {
       setIsLoading(false);
-      return toast.error("Enter valid otp");      
-
+      return toast.error("Enter valid otp");
     }
     const email = `${formData.emailPrefix}${formData.emailDomain}`;
     const payLoad = {
       email: email,
-      otp: formData.otp
-    }
-    axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/verify-otp", payLoad)
-    .then(res => {
-      setFormData(prev => ({ ...prev, isVerified: true }));
-      toast.success(res.data.message); 
-    })
-    .catch(err => {
-      console.log(err);
-      const errorMsg = err.response?.data?.message || err.response?.data || "Verification failed";
-      toast.error(errorMsg);
-    })
-    .finally(() => { 
-      setIsLoading(false); 
-    });
-  }
+      otp: formData.otp,
+    };
+    axios
+      .post(import.meta.env.VITE_SERVER_DOMAIN + "/verify-otp", payLoad)
+      .then((res) => {
+        setFormData((prev) => ({ ...prev, isVerified: true }));
+        toast.success(res.data.message);
+      })
+      .catch((err) => {
+        console.log(err);
+        const errorMsg =
+          err.response?.data?.message ||
+          err.response?.data ||
+          "Verification failed";
+        toast.error(errorMsg);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+  };
 
-
-const handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const finalData = {
       ...formData,
       email: `${formData.emailPrefix}${formData.emailDomain}`,
     };
+
     if (!validatePassword(finalData.password)) {
       toast.error("Password must contain: 1 Uppercase, 1 Number, 1 Symbol");
     } else {
@@ -113,15 +122,23 @@ const handleSubmit = (e) => {
         .post(import.meta.env.VITE_SERVER_DOMAIN + "/signup", finalData)
         .then((res) => {
           console.log(res);
-          toast.success("Signup successful! Please login.");
-          setUser(res.data);
-          navigate('/');
+          if (res.data.token) {
+            localStorage.setItem("token", res.data.token);
+            localStorage.setItem("user", JSON.stringify(res.data));
+            setUser(res.data);
+            toast.success("Signup successful!");
+            navigate('/');
+          } else {
+            toast.success("Account created! Please log in.");
+            navigate('/login');
+          }
         })
         .catch((err) => {
           console.log(err.message);
-          const errorMsg = err.response?.data?.msg || err.response?.data || "Signup failed";
+          const errorMsg =
+            err.response?.data?.msg || err.response?.data || "Signup failed";
           toast.error(errorMsg);
-        })
+        });
     }
   };
 
@@ -185,35 +202,50 @@ const handleSubmit = (e) => {
                   value={formData.emailDomain}
                   className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm w-1/2 cursor-not-allowed"
                 />
-                {!isOtpSent && !formData.isVerified && (<button className="bg-green-400 text-white" disabled={isLoading} onClick={handleVerify}>Verify Email</button>)}
+                {!isOtpSent && !formData.isVerified && (
+                  <button
+                    className="bg-green-400 text-white"
+                    disabled={isLoading}
+                    onClick={handleVerify}
+                  >
+                    Verify Email
+                  </button>
+                )}
               </div>
-              {
-                  isOtpSent && !formData.isVerified && (
-                    <div className="mt-4 animate-fade-in-down">
-                      <label className="block text-sm font-medium text-slate-700 mb-1">
-                        Enter One-Time Password
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="text"
-                          placeholder="Enter 6-digit OTP"
-                          maxLength={6}
-                          className="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                        />
-                        <button
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm whitespace-nowrap"
-                          onClick={handleOtp}
-                        >
-                          Confirm OTP
-                        </button>
-                      </div>
-                      <p className="mt-2 text-xs text-slate-500">
-                        Didn't receive code? <button className="text-blue-600 hover:underline" onClick={handleVerify} disabled={timer > 0}>{timer > 0 ? `Resend in ${timer}s` : 'Resend'}</button>
-                      </p>
-                    </div>
-                  )
-                }
+              {isOtpSent && !formData.isVerified && (
+                <div className="mt-4 animate-fade-in-down">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Enter One-Time Password
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter 6-digit OTP"
+                      maxLength={6}
+                      className="block w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      onChange={(e) =>
+                        setFormData({ ...formData, otp: e.target.value })
+                      }
+                    />
+                    <button
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm whitespace-nowrap"
+                      onClick={handleOtp}
+                    >
+                      Confirm OTP
+                    </button>
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    Didn't receive code?{" "}
+                    <button
+                      className="text-blue-600 hover:underline"
+                      onClick={handleVerify}
+                      disabled={timer > 0}
+                    >
+                      {timer > 0 ? `Resend in ${timer}s` : "Resend"}
+                    </button>
+                  </p>
+                </div>
+              )}
 
               <p className="mt-1 text-xs text-slate-500">
                 Select your college above to auto-fill the domain.
