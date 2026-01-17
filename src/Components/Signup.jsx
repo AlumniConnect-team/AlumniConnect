@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CollegeSelect from './CollegeSelect';
 import axios from 'axios';
 import { validatePassword } from './Login';
 import toast from 'react-hot-toast';
+
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +18,18 @@ const Signup = () => {
     isVerified:false
   });
   const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [timer, setTimer] = useState(0);
+
+  useEffect(() => {
+    let interval;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   const handleCollegeSelect = (name, domain) => {
     setFormData(prev => ({
@@ -26,53 +39,58 @@ const Signup = () => {
     }));
   };
 
-  const handleVerify = (e) => {
+const handleVerify = (e) => {
     e.preventDefault();
-    e.target.setAttribute("disabled", "true");
+    if (timer > 0) return;
+    setIsLoading(true);
     if (!formData.emailPrefix.length || !formData.emailDomain.length) {
-      e.target.removeAttribute("disabled");
       return toast.error("Select College and Enter the prefix of email first");
     }
     const email = `${formData.emailPrefix}${formData.emailDomain}`;
-    axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/verify-email",{email:email})
-      .then(res=>{
-        toast.success(res.data);
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/verify-email", {email:email})
+      .then(res => {
+        toast.success(res.data); 
         setIsOtpSent(true);
+        setTimer(30);
+        setIsLoading(false);
       })
-      .catch(err=>{
+      .catch(err => {
         console.log(err);
-        const errorMessage = err.response?.data || "Something went wrong";
-        toast.error(errorMessage);
+        const errorMsg = err.response?.data?.message || err.response?.data || "Something went wrong";
+        toast.error(typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : errorMsg);
         setIsOtpSent(false);
+        setIsLoading(false);
       })
-    e.target.removeAttribute("disabled");
   }
 
-  const handleOtp = (e) => {
+const handleOtp = (e) => {
     e.preventDefault();
-    e.target.setAttribute("disabled", "true");
+    setIsLoading(true);
     if(!formData.otp.length){
-      e.target.removeAttribute("disabled");
+      setIsLoading(false);
       return toast.error("Enter valid otp");      
     }
     const email = `${formData.emailPrefix}${formData.emailDomain}`;
     const payLoad = {
-      email:email,
-      otp:formData.otp
+      email: email,
+      otp: formData.otp
     }
-    axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/verify-otp",payLoad)
-    .then(res=>{
+    axios.post(import.meta.env.VITE_SERVER_DOMAIN+"/verify-otp", payLoad)
+    .then(res => {
       setFormData(prev => ({ ...prev, isVerified: true }));
-      toast.success(res.data);
+      toast.success(res.data.message); 
     })
-    .catch(err=>{
+    .catch(err => {
       console.log(err);
-      toast.error(err.response.data);
+      const errorMsg = err.response?.data?.message || err.response?.data || "Verification failed";
+      toast.error(errorMsg);
     })
-    e.target.removeAttribute("disabled");
+    .finally(() => { 
+      setIsLoading(false); 
+    });
   }
 
-  const handleSubmit = (e) => {
+const handleSubmit = (e) => {
     e.preventDefault();
     const finalData = {
       ...formData,
@@ -84,11 +102,12 @@ const Signup = () => {
       axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/signup", finalData)
         .then((res) => {
           console.log(res);
-          toast.success(res.response.data);
+          toast.success("Signup successful! Please login.");
         })
         .catch(err => {
           console.log(err.message);
-          toast.error(err.response.data);
+          const errorMsg = err.response?.data?.msg || err.response?.data || "Signup failed";
+          toast.error(errorMsg);
         })
     }
   };
@@ -143,7 +162,7 @@ const Signup = () => {
                   value={formData.emailDomain}
                   className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm w-1/2 cursor-not-allowed"
                 />
-                {!isOtpSent && !formData.isVerified && (<button className="bg-green-400 text-white" onClick={handleVerify}>Verify Email</button>)}
+                {!isOtpSent && !formData.isVerified && (<button className="bg-green-400 text-white" disabled={isLoading} onClick={handleVerify}>Verify Email</button>)}
               </div>
               {
                   isOtpSent && !formData.isVerified && (
@@ -167,7 +186,7 @@ const Signup = () => {
                         </button>
                       </div>
                       <p className="mt-2 text-xs text-slate-500">
-                        Didn't receive code? <button className="text-blue-600 hover:underline">Resend</button>
+                        Didn't receive code? <button className="text-blue-600 hover:underline" onClick={handleVerify} disabled={timer > 0}>{timer > 0 ? `Resend in ${timer}s` : 'Resend'}</button>
                       </p>
                     </div>
                   )
