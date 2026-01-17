@@ -1,10 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const Events = () => {
-  const [userRole, setUserRole] = useState("alumni");
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const isAlumni = userRole === "alumni";
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        toast.error("Please login first");
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const res = await axios.get(
+          import.meta.env.VITE_SERVER_DOMAIN + "/api/auth/me",
+          {
+            headers: {
+              "x-auth-token": token,
+            },
+          }
+        );
+        setUser(res.data);
+        setLoading(false);
+      } catch (err) {
+        console.error(err);
+        toast.error("Session expired, please login again");
+        localStorage.removeItem("token");
+        navigate("/login");
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]);
+
+  const isAlumni = user
+    ? user.graduationYear < new Date().getFullYear()
+    : false;
 
   const featuredEvents = [
     {
@@ -55,22 +93,26 @@ const Events = () => {
 
   const currentEvent = featuredEvents[currentIndex];
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex justify-center items-center bg-slate-50">
+        <div className="text-xl font-semibold text-blue-600">
+          Loading Events...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-slate-50 min-h-screen font-sans">
-      
-      <div className="fixed top-20 right-4 z-50 bg-black text-white p-2 rounded-lg text-xs opacity-80 hover:opacity-100">
-        <p className="mb-1">
-          Current View:{" "}
+      <div className="fixed top-20 right-4 z-50 bg-black text-white p-3 rounded-lg text-xs opacity-90 shadow-lg">
+        <p className="mb-0">
+          Welcome, {user.fullName.split(" ")[0]} <br />
+          Status:{" "}
           <span className="font-bold text-yellow-400 uppercase">
-            {userRole}
+            {isAlumni ? "Alumni" : "Student"}
           </span>
         </p>
-        <button
-          onClick={() => setUserRole(isAlumni ? "student" : "alumni")}
-          className="bg-gray-700 px-2 py-1 rounded border border-gray-500 hover:bg-gray-600"
-        >
-          Switch Role
-        </button>
       </div>
 
       <section className="relative bg-white pt-24 pb-16 px-6 border-b border-slate-200">
