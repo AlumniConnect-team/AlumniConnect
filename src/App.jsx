@@ -12,10 +12,12 @@ import HostGuidelinesPage from "./Components/EVENTS/HostGuidelinesPage";
 import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
 import {Toaster} from 'react-hot-toast';
+import { UserProvider } from "./context/UserContext";
 
 function App() {
   return (
     <div>
+      <UserProvider>
     <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
     <Router>
       <div className="min-h-screen bg-slate-50">
@@ -49,6 +51,7 @@ function App() {
         </Routes>
       </div>
     </Router>
+    </UserProvider>
     </div>
   );
 }

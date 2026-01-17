@@ -1,13 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import CollegeSelect from './CollegeSelect';
 import axios from 'axios';
 import { validatePassword } from './Login';
 import toast from 'react-hot-toast';
+import { UserContext } from '../context/UserContext';
 
 
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { setUser } = useContext(UserContext);
   const [formData, setFormData] = useState({
     fullName: "",
     collegeName: "",
@@ -111,6 +114,8 @@ const handleSubmit = (e) => {
         .then((res) => {
           console.log(res);
           toast.success("Signup successful! Please login.");
+          setUser(res.data);
+          navigate('/');
         })
         .catch((err) => {
           console.log(err.message);
