@@ -1,7 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const isLoggedIn = !!localStorage.getItem("token");
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
   return (
     <nav className="bg-white h-[80px] w-full flex items-center px-[5%] shadow-md sticky top-0 z-[1000]">
       <div className="flex-1 flex justify-start">
@@ -46,29 +54,40 @@ const Navbar = () => {
             Jobs & Referrals
           </Link>
         </li>
-        <li>
-          <Link
-            to="/dashboard"
-            className="no-underline text-gray-800 font-semibold text-[15px] hover:text-blue-600 transition-colors"
-          >
-            Dashboard
-          </Link>
-        </li>
       </ul>
 
-      <div className="flex-1 flex justify-end gap-[15px] max-md:hidden">
-        <Link
-          to="/login"
-          className="inline-block px-[24px] py-[10px] rounded-md font-semibold text-[14px] border-2 border-blue-600 text-blue-600 bg-transparent transition-all duration-300 hover:bg-blue-50 cursor-pointer"
-        >
-          Login
-        </Link>
-        <Link
-          to="/signup"
-          className="px-[24px] py-[10px] rounded-md font-semibold text-[14px] border-2 border-blue-600 bg-blue-600 text-white shadow-md transition-all duration-300 hover:bg-blue-700 hover:-translate-y-[1px] no-underline"
-        >
-          Join Network
-        </Link>
+      <div className="flex-1 flex justify-end gap-[15px] max-md:hidden items-center">
+        {!isLoggedIn ? (
+          <>
+            <Link
+              to="/login"
+              className="inline-block px-[24px] py-[10px] rounded-md font-semibold text-[14px] border-2 border-blue-600 text-blue-600 bg-transparent transition-all duration-300 hover:bg-blue-50 cursor-pointer"
+            >
+              Login
+            </Link>
+            <Link
+              to="/signup"
+              className="px-[24px] py-[10px] rounded-md font-semibold text-[14px] border-2 border-blue-600 bg-blue-600 text-white shadow-md transition-all duration-300 hover:bg-blue-700 hover:-translate-y-[1px] no-underline"
+            >
+              Join Network
+            </Link>
+          </>
+        ) : (
+          <>
+            <Link
+              to="/dashboard"
+              className="text-gray-800 font-bold text-[15px] hover:text-blue-600 transition-colors mr-2"
+            >
+              My Account
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="px-[20px] py-[8px] rounded-md font-semibold text-[14px] border-2 border-red-500 text-red-500 hover:bg-red-50 transition-all duration-300"
+            >
+              Logout
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );
