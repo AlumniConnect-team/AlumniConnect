@@ -6,10 +6,12 @@ import { validatePassword } from './Login';
 import toast from 'react-hot-toast';
 import { UserContext } from '../context/UserContext';
 
-
 const Signup = () => {
   const navigate = useNavigate();
   const { setUser } = useContext(UserContext);
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [timer, setTimer] = useState(0);
   const [formData, setFormData] = useState({
     fullName: "",
     collegeName: "",
@@ -20,9 +22,6 @@ const Signup = () => {
     otp: "",
     isVerified: false,
   });
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [timer, setTimer] = useState(0);
 
   useEffect(() => {
     let interval;
@@ -44,11 +43,14 @@ const Signup = () => {
 
   const handleVerify = (e) => {
     e.preventDefault();
-    if (timer > 0) return;
-    setIsLoading(true);
+    if (isLoading || timer > 0) return;
+
     if (!formData.emailPrefix.length || !formData.emailDomain.length) {
       return toast.error("Select College and Enter the prefix of email first");
     }
+
+    setIsLoading(true);
+
     const email = `${formData.emailPrefix}${formData.emailDomain}`;
 
     axios
@@ -57,12 +59,9 @@ const Signup = () => {
       })
       .then((res) => {
         toast.success(res.data);
-
         setIsOtpSent(true);
         setTimer(30);
-        setIsLoading(false);
       })
-
       .catch((err) => {
         console.log(err);
         const errorMsg =
@@ -73,17 +72,21 @@ const Signup = () => {
           typeof errorMsg === "object" ? JSON.stringify(errorMsg) : errorMsg
         );
         setIsOtpSent(false);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
   };
 
   const handleOtp = (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    
     if (!formData.otp.length) {
-      setIsLoading(false);
       return toast.error("Enter valid otp");
     }
+
+    setIsLoading(true);
+
     const email = `${formData.emailPrefix}${formData.emailDomain}`;
     const payLoad = {
       email: email,
@@ -110,6 +113,7 @@ const Signup = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (isLoading) return;
     const finalData = {
       ...formData,
       email: `${formData.emailPrefix}${formData.emailDomain}`,
@@ -118,10 +122,10 @@ const Signup = () => {
     if (!validatePassword(finalData.password)) {
       toast.error("Password must contain: 1 Uppercase, 1 Number, 1 Symbol");
     } else {
+      setIsLoading(true);
       axios
         .post(import.meta.env.VITE_SERVER_DOMAIN + "/signup", finalData)
         .then((res) => {
-          console.log(res);
           if (res.data.token) {
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data));
@@ -134,17 +138,19 @@ const Signup = () => {
           }
         })
         .catch((err) => {
-          console.log(err.message);
           const errorMsg =
             err.response?.data?.msg || err.response?.data || "Signup failed";
           toast.error(errorMsg);
+        })
+        .finally(() => {
+          setIsLoading(false);
         });
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="sm:mx-auto sm:w-full sm:max-w-xl">
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900">
           Join the Alumni Network
         </h2>
@@ -152,14 +158,14 @@ const Signup = () => {
           Already have an account?{" "}
           <Link
             to="/login"
-            className="font-medium text-blue-600 hover:text-blue-500"
+            className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
           >
             Sign in
           </Link>
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-xl">
         <div className="bg-white py-8 px-4 shadow sm:rounded-2xl sm:px-10 border border-slate-200">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
@@ -184,31 +190,36 @@ const Signup = () => {
               <label className="block text-sm font-medium text-slate-700">
                 College Email ID
               </label>
-              <div className="mt-1 flex rounded-md shadow-sm">
-                <input
-                  type="text"
-                  required
-                  placeholder="student_id"
-                  className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-l-lg border border-slate-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-r-0"
-                  onChange={(e) =>
-                    setFormData({ ...formData, emailPrefix: e.target.value })
-                  }
-                />
-
-                <input
-                  type="text"
-                  readOnly
-                  placeholder="@college.edu"
-                  value={formData.emailDomain}
-                  className="inline-flex items-center px-3 rounded-r-md border border-l-0 border-slate-300 bg-slate-50 text-slate-500 sm:text-sm w-1/2 cursor-not-allowed"
-                />
+              <div className="mt-1 flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-1 rounded-md shadow-sm">
+                  <input
+                    type="text"
+                    required
+                    placeholder="student_id"
+                    className="flex-1 min-w-0 block w-full px-3 py-2 rounded-l-lg border border-slate-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm border-r-0"
+                    onChange={(e) =>
+                      setFormData({ ...formData, emailPrefix: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    readOnly
+                    placeholder="@college.edu"
+                    value={formData.emailDomain}
+                    className="flex-1 inline-flex items-center px-3 rounded-r-md border border-slate-300 bg-slate-50 text-slate-500 sm:text-sm cursor-not-allowed"
+                  />
+                </div>
                 {!isOtpSent && !formData.isVerified && (
                   <button
-                    className="bg-green-400 text-white"
+                    className={`px-6 py-2 rounded-lg text-white font-medium transition-colors whitespace-nowrap ${
+                      isLoading 
+                        ? "bg-green-300 cursor-not-allowed" 
+                        : "bg-green-500 hover:bg-green-600 cursor-pointer" 
+                    }`}
                     disabled={isLoading}
                     onClick={handleVerify}
                   >
-                    Verify Email
+                    {isLoading ? "Sending..." : "Verify Email"}
                   </button>
                 )}
               </div>
@@ -228,7 +239,7 @@ const Signup = () => {
                       }
                     />
                     <button
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm whitespace-nowrap"
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium text-sm whitespace-nowrap cursor-pointer"
                       onClick={handleOtp}
                     >
                       Confirm OTP
@@ -237,7 +248,7 @@ const Signup = () => {
                   <p className="mt-2 text-xs text-slate-500">
                     Didn't receive code?{" "}
                     <button
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 hover:underline cursor-pointer"
                       onClick={handleVerify}
                       disabled={timer > 0}
                     >
@@ -246,52 +257,50 @@ const Signup = () => {
                   </p>
                 </div>
               )}
-
-              <p className="mt-1 text-xs text-slate-500">
-                Select your college above to auto-fill the domain.
-              </p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Graduation Year
-              </label>
-              <input
-                type="number"
-                required
-                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                placeholder="2024"
-                onChange={(e) =>
-                  setFormData({ ...formData, graduationYear: e.target.value })
-                }
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700">
+                  Graduation Year
+                </label>
+                <input
+                  type="number"
+                  required
+                  className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="2024"
+                  onChange={(e) =>
+                    setFormData({ ...formData, graduationYear: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  className="mt-1 block w-full border border-slate-300 rounded-lg shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
+                />
+              </div>
             </div>
 
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors cursor-pointer"
+                disabled={isLoading}
+                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors ${isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
               >
-                Create Account
+                {isLoading ? "Creating Account..." : "Create Account"}
               </button>
             </div>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-6 text-center">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-slate-300"></div>
@@ -302,7 +311,6 @@ const Signup = () => {
                 </span>
               </div>
             </div>
-
             <div className="mt-6">
               <button className="w-full inline-flex justify-center py-2 px-4 border border-slate-300 rounded-lg shadow-sm bg-white text-sm font-medium text-slate-500 hover:bg-slate-50 cursor-pointer">
                 <img

@@ -13,6 +13,7 @@ import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
 import {Toaster} from 'react-hot-toast';
 import { UserProvider } from "./context/UserContext";
+import SearchAlumni from "./Components/Search";
 
 function App() {
   return (
@@ -41,7 +42,7 @@ function App() {
 
           <Route
             path="/search"
-            element={<div className="p-10 text-2xl">Search Alumni Page</div>}
+            element={<SearchAlumni/>}
           />
           <Route
             path="/dashboard"
