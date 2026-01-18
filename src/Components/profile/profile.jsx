@@ -1,3 +1,4 @@
+
 import React,  { useState, useEffect } from "react";
  import  axios from "axios";
 import { toast } from  "react-hot-toast";
@@ -16,6 +17,7 @@ const  Profile = () => {
 
   const  [profilePic, setProfilePic] = useState(null);
   const [previewPic, setPreviewPic] = useState(null);
+
   const [resume, setResume] = useState(null);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ const  Profile = () => {
              headers: { "x-auth-token": token },
            },
         );
- 
+
         setFormData({
           fullName:  res.data.fullName || "",
           email: res.data.email || "",
@@ -55,12 +57,15 @@ const  Profile = () => {
     if (e.target.name === "profilePic") {
       setProfilePic(file);
       setPreviewPic(URL.createObjectURL(file));
+
     } else if (e.target.name === "resume") {
       setResume(file);
     }
   };
 
+
   const  handleSubmit = async (e) => {
+
     e.preventDefault();
     setLoading(true);
  
@@ -99,7 +104,9 @@ const  Profile = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+
          <div className="bg-blue-600 px-8 py-6 text-white">
+
           <h1 className="text-3xl font-bold">Edit Profile</h1>
           <p className="opacity-90 mt-2">
              Update your personal details and work history.
@@ -145,7 +152,7 @@ const  Profile = () => {
               Allowed *.jpeg, *.jpg, *.png, *.gif <br /> Max size of 3.1 MB
             </p>
           </div>
- 
+
           <div className="md:col-span-2 space-y-6">
             <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
                <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
@@ -191,7 +198,7 @@ const  Profile = () => {
                  </div>
               </div>
             </div>
- 
+
             <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
                 Professional Experience
@@ -241,6 +248,7 @@ const  Profile = () => {
             </div>
 
              <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+
               <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
                 Resume / CV
               </h3>
