@@ -28,7 +28,7 @@ const Login = () => {
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/login", finalData)
       .then((res) => {
         localStorage.setItem("token", res.data.token);
-
+        localStorage.setItem("user", JSON.stringify(res.data));
         toast.success("Authentication successful");
         console.log(res.data);
 
