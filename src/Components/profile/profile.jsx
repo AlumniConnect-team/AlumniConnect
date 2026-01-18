@@ -6,7 +6,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "", 
+    email: "",
+
     backupEmail: "",
     currentCompany: "",
     jobRole: "",
@@ -14,8 +15,9 @@ const Profile = () => {
     bio: "",
   });
 
-  const [profilePic, setProfilePic] = useState(null); 
-  const [previewPic, setPreviewPic] = useState(null); 
+  const [profilePic, setProfilePic] = useState(null);
+  const [previewPic, setPreviewPic] = useState(null);
+
   const [resume, setResume] = useState(null);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ const Profile = () => {
     const file = e.target.files[0];
     if (e.target.name === "profilePic") {
       setProfilePic(file);
-      setPreviewPic(URL.createObjectURL(file)); 
+      setPreviewPic(URL.createObjectURL(file));
     } else if (e.target.name === "resume") {
       setResume(file);
     }
@@ -110,7 +112,7 @@ const Profile = () => {
         >
           <div className="md:col-span-1 flex flex-col items-center space-y-4">
             <div className="relative group">
-              <div className="w-40 h-40 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
+              <div className="w-40 h-40 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center  justify-center">
                 {previewPic ? (
                   <img
                     src={previewPic}
@@ -143,6 +145,7 @@ const Profile = () => {
               Allowed *.jpeg, *.jpg, *.png, *.gif <br /> Max size of 3.1 MB
             </p>
           </div>
+
           <div className="md:col-span-2 space-y-6">
             <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-4 border-b pb-2">
