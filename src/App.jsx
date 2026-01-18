@@ -11,44 +11,50 @@ import SubmitEventProposalPage from "./Components/EVENTS/SubmitEventProposalPage
 import HostGuidelinesPage from "./Components/EVENTS/HostGuidelinesPage";
 import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
-import {Toaster} from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
+import Profile from "./Components/profile/Profile";
 
 function App() {
   return (
     <div>
-    <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
-    <Router>
-      <div className="min-h-screen bg-slate-50">
-        <Navbar />
+      <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+      <Router>
+        <div className="min-h-screen bg-slate-50">
+          <Navbar />
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
 
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/events">
-            <Route index element={<Events />} />
-            <Route path="register" element={<RegisterEventPage />} />
-            <Route path="agenda" element={<ViewAgendaPage />} />
+            {/* Events Nested Routes */}
+            <Route path="/events">
+              <Route index element={<Events />} />
+              <Route path="register" element={<RegisterEventPage />} />
+              <Route path="agenda" element={<ViewAgendaPage />} />
+              <Route
+                path="submit-proposal"
+                element={<SubmitEventProposalPage />}
+              />
+              <Route path="guidelines" element={<HostGuidelinesPage />} />
+            </Route>
+
             <Route
-              path="submit-proposal"
-              element={<SubmitEventProposalPage />}
+              path="/search"
+              element={<div className="p-10 text-2xl">Search Alumni Page</div>}
             />
-            <Route path="guidelines" element={<HostGuidelinesPage />} />
-          </Route>
 
-          <Route
-            path="/search"
-            element={<div className="p-10 text-2xl">Search Alumni Page</div>}
-          />
-          <Route
-            path="/dashboard"
-            element={<div className="p-10 text-2xl">Dashboard Page</div>}
-          />
-          <Route path="/jobs" element={<JobReferrals />} />
-        </Routes>
-      </div>
-    </Router>
+            <Route
+              path="/dashboard"
+              element={<div className="p-10 text-2xl">Dashboard Page</div>}
+            />
+
+            <Route path="/profile" element={<Profile />} />
+
+            <Route path="/jobs" element={<JobReferrals />} />
+          </Routes>
+        </div>
+      </Router>
     </div>
   );
 }
