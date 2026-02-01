@@ -90,7 +90,7 @@ const Navbar = () => {
             {isDropdownOpen && (
               <div className="absolute right-0 top-[50px] w-[200px] bg-white shadow-xl rounded-lg border border-gray-100 overflow-hidden py-2 flex flex-col z-[1100]">
                 <Link
-                  to="/Dashboard"
+                  to="/dashboard"
                   className="px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 no-underline"
                   onClick={() => setIsDropdownOpen(false)}
                 >
