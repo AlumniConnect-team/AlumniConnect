@@ -15,6 +15,7 @@ import {Toaster} from 'react-hot-toast';
 import { UserProvider } from "./context/UserContext";
 import SearchAlumni from "./Components/Search";
 import Profile from "./Components/profile/Profile";
+import Updatepwd from "./Components/forgotpassword";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/updatepwd" element={<Updatepwd/>}/>
             <Route path="/events">
               <Route index element={<Events />} />
               <Route path="register" element={<RegisterEventPage />} />
