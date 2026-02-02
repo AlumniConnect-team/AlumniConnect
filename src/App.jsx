@@ -11,7 +11,7 @@ import SubmitEventProposalPage from "./Components/EVENTS/SubmitEventProposalPage
 import HostGuidelinesPage from "./Components/EVENTS/HostGuidelinesPage";
 import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
-import {Toaster} from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import { UserProvider } from "./context/UserContext";
 import SearchAlumni from "./Components/Search";
 import Profile from "./Components/profile/Profile";
@@ -56,8 +56,8 @@ function App() {
       </div>
     </Router>
     </UserProvider>
+</div>
 
-    </div>
   );
 }
 
