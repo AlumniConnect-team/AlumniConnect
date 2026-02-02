@@ -1,7 +1,7 @@
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "axios"
 
 export const validatePassword = (password) => {
   const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
@@ -81,12 +81,10 @@ const Login = () => {
                   Password
                 </label>
                 <div className="text-sm">
-                  <a
-                    href="#"
-                    className="font-medium text-blue-600 hover:text-blue-500"
-                  >
-                    Forgot password?
-                  </a>
+                  <Link to="/updatepwd" className="font-medium text-blue-600 hover:text-blue-500">
+                  Forgot password?
+                  </Link>
+        
                 </div>
               </div>
               <input
