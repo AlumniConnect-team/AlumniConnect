@@ -13,7 +13,6 @@ import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
 import { Toaster } from "react-hot-toast";
 import { UserProvider } from "./context/UserContext";
-import SearchAlumni from "./Components/Search";
 import Profile from "./Components/profile/Profile";
 import Updatepwd from "./Components/forgotpassword";
 
@@ -42,10 +41,6 @@ function App() {
               />
               <Route path="guidelines" element={<HostGuidelinesPage />} />
             </Route>
-          <Route
-            path="/search"
-            element={<SearchAlumni/>}
-          />
           <Route
             path="/dashboard"
             element={<div className="p-10 text-2xl">Dashboard Page</div>}

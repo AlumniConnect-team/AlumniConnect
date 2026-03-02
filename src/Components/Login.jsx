@@ -2,6 +2,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios"
+import { useContext } from "react";
+import { UserContext } from "../context/UserContext";
 
 export const validatePassword = (password) => {
   const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
@@ -14,7 +16,7 @@ const Login = () => {
     password: "",
   });
   const navigate = useNavigate();
-
+  const {loginUser} = useContext(UserContext);
   const handleSubmit = (e) => {
     e.preventDefault();
     const finalData = { ...data };
@@ -31,7 +33,7 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(res.data));
         toast.success("Authentication successful");
         console.log(res.data);
-
+        loginUser(res.data.user);
         navigate("/");
       })
       .catch((err) => {

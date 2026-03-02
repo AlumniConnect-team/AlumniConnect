@@ -22,7 +22,7 @@ const Signup = () => {
     otp: "",
     isVerified: false,
   });
-
+  const {loginUser} = useContext(UserContext);
   useEffect(() => {
     let interval;
     if (timer > 0) {
@@ -130,6 +130,7 @@ const Signup = () => {
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data));
             setUser(res.data);
+            loginUser(res.data.user);
             toast.success("Signup successful!");
             navigate('/');
           } else {

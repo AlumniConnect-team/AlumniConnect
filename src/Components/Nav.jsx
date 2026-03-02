@@ -38,14 +38,6 @@ const Navbar = () => {
         </li>
         <li>
           <Link
-            to="/search"
-            className="no-underline text-gray-800 font-semibold text-[15px] hover:text-blue-600 transition-colors"
-          >
-            Search Alumni
-          </Link>
-        </li>
-        <li>
-          <Link
             to="/events"
             className="no-underline text-gray-800 font-semibold text-[15px] hover:text-blue-600 transition-colors"
           >
