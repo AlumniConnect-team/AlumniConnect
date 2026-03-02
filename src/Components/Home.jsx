@@ -1,148 +1,168 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect, useContext } from 'react';
+import axios from 'axios';
+import { UserContext } from '../context/UserContext'; 
+import { Link } from 'react-router-dom';
 
 const Home = () => {
-  const [login,setLogin] = useState(true);
+  const { user } = useContext(UserContext);
+  const [allUsers, setAllUsers] = useState([]); 
+  const [displayList, setDisplayList] = useState([]); 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("alumni"); 
+  const [loading, setLoading] = useState(true);
 
-      const [allUsers] = useState([
-    { id: 1, name: "Sahil Verma", college: "IT Delhi", email: "sahil@example.com", gradYear: 2022 },
-    { id: 2, name: "Priya Sharma", college: "IT Delhi", email: "priya@example.com", gradYear: 2021 },
-    { id: 3, name: "Rajat Singh", college: "VIT Vellore", email: "rajat@example.com", gradYear: 2026 },
-    { id: 4, name: "Ananya Iyer", college: "IIT Bombay", email: "ananya@example.com", gradYear: 2023 },
-    { id: 5, name: "Deepak Raj", college: "IT Delhi", email: "deepak@example.com", gradYear: 2025 },
-  ]);
+  const fetchNetwork = async (query = "") => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const payload = {
+        college: user.college,
+        userGraduationYear: user.graduationYear,
+        searchQuery: query
+      };
+      const res = await axios.post(import.meta.env.VITE_SERVER_DOMAIN + "/search-alumni", payload);
+      setAllUsers(res.data);
+      setLoading(false);
+    } catch (err) {
+      console.log(err);
+      setLoading(false);
+    }
+  };
 
-  // 2. LOGGED IN USER (Simulating your session)
-  const currentUser = { name: "Abhilash", college: "IT Delhi" };
+  useEffect(() => {
+    if (user) {
+      fetchNetwork(); 
+    }
+  }, [user]);
 
-  const [searchTerm, setSearchTerm] = useState('');
+  useEffect(() => {
+    if (!user || allUsers.length === 0) return;
 
-  // 3. FILTERING LOGIC
-  const filtered = allUsers.filter(u => 
-    u.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    let filtered = allUsers;
 
-  const myAlumni = filtered.filter(u => u.college === currentUser.college);
-  const otherPeople = filtered.filter(u => u.college !== currentUser.college);
-    
+    if (searchTerm) {
+      filtered = filtered.filter(u => 
+        u.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
+    if (activeTab === "alumni") {
+      filtered = filtered.filter(u => parseInt(u.graduationYear) < parseInt(user.graduationYear));
+    } else {
+      filtered = filtered.filter(u => parseInt(u.graduationYear) > parseInt(user.graduationYear));
+    }
+
+    setDisplayList(filtered);
+  }, [activeTab, searchTerm, allUsers, user]);
+
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    fetchNetwork(e.target.value); 
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center p-10 bg-white shadow-2xl rounded-3xl max-w-lg mx-4">
+          <h2 className="text-3xl font-extrabold text-slate-900 mb-4">Welcome to Alumni Connect</h2>
+          <p className="text-gray-500 mb-8">Please log in to access your network.</p>
+          <Link to="/login" className="px-8 py-3 bg-blue-600 text-white rounded-full font-bold hover:bg-blue-700 transition">
+            Login Now
+          </Link>
+        </div>
+      </div>
+    );
+  }
   return (
-    <div className="bg-slate-50 min-h-screen font-sans">
-      <section className="relative bg-white py-24 px-6 border-b border-slate-200">
-        <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium mb-6">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600"></span>
-            </span>
-            New: Alumni Mentorship Program 2026
-          </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight mb-6">
-            Connecting <span className="text-blue-600">Past Graduates</span> <br /> 
-            with Future Opportunities
-          </h1>
-          <p className="text-lg text-slate-600 mb-10 max-w-2xl leading-relaxed">
-            Welcome to the official AlumniConnect platform. Reconnect with classmates, 
-            mentor current students, and stay updated with campus events.
-          </p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/signup" className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 transition-all transform hover:-translate-y-1">
-              Join the Network
-            </Link>
-            <Link to="/search" className="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all">
-              Find Classmates
-            </Link>
-          </div>
+    <div className="min-h-screen bg-gray-50 font-sans pb-12">
+      <div className="bg-slate-900 text-white pt-20 pb-32 px-4 text-center rounded-b-[3rem] shadow-2xl relative">
+        <h1 className="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight">
+          Hello, <span className="text-blue-400">{user.fullName || user.name}</span>
+        </h1>
+        <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          {activeTab === "alumni" 
+            ? "Connect with seniors who have walked your path." 
+            : "Guide the next generation of students."}
+        </p>
+        <div className="mt-10 inline-flex bg-slate-800 p-1.5 rounded-full border border-slate-700 shadow-xl">
+            <button 
+                onClick={() => setActiveTab("alumni")}
+                className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${activeTab === "alumni" ? "bg-blue-600 text-white shadow-lg scale-105" : "text-slate-400 hover:text-white"}`}
+            >
+                My Alumni (Seniors)
+            </button>
+            <button 
+                onClick={() => setActiveTab("juniors")}
+                className={`px-8 py-3 rounded-full text-sm font-bold transition-all ${activeTab === "juniors" ? "bg-blue-600 text-white shadow-lg scale-105" : "text-slate-400 hover:text-white"}`}
+            >
+                My Juniors (Students)
+            </button>
         </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-12 bg-slate-900 text-white">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-          <div>
-            <p className="text-4xl font-bold text-blue-400">10k+</p>
-            <p className="text-slate-400 text-sm">Active Alumni</p>
-          </div>
-          <div>
-            <p className="text-4xl font-bold text-blue-400">50+</p>
-            <p className="text-slate-400 text-sm">Countries</p>
-          </div>
-          <div>
-            <p className="text-4xl font-bold text-blue-400">200+</p>
-            <p className="text-slate-400 text-sm">Hiring Partners</p>
-          </div>
-          <div>
-            <p className="text-4xl font-bold text-blue-400">$1M+</p>
-            <p className="text-slate-400 text-sm">Grants Awarded</p>
-          </div>
+        <div className="mt-8 flex justify-center relative z-20">
+          <input 
+            type="text" 
+            placeholder={`Search ${activeTab}...`}
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="w-full max-w-lg px-8 py-4 rounded-full border-none shadow-xl text-slate-900 focus:ring-4 focus:ring-blue-500/50 focus:outline-none text-lg placeholder-gray-400"
+          />
         </div>
-      </section>
+      </div>
 
-      {/* Core Features */}
-      <section className="py-20 px-6 max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <p className="text-blue-600 uppercase tracking-widest text-xs font-black mb-3">Our Ecosystem</p>
-          <h2 className="text-4xl font-bold text-slate-900">
-            Lifelong professional value.
-          </h2>
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 px-6 max-w-7xl mx-auto -mt-20 relative z-10">
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
-            <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:bg-blue-600 group-hover:text-white transition-all">🔍</div>
-            <h3 className="font-bold text-xl text-slate-900 mb-3">Directory Search</h3>
-            <p className="text-slate-500">Filter alumni by company, location, or graduation year to find the right connection.</p>
-          </div>
+        {loading ? (
+            <p className="text-center col-span-full text-gray-500">Loading your network...</p>
+        ) : (
+            <>
+                {displayList.map((person) => (
+                  <div key={person._id} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 flex flex-col group border border-gray-100">
+                    
+                    <div className={`h-24 relative flex justify-center ${activeTab === "alumni" ? "bg-gradient-to-r from-blue-600 to-indigo-600" : "bg-gradient-to-r from-emerald-500 to-teal-500"}`}>
+                      <div className="w-20 h-20 bg-white rounded-full absolute -bottom-10 flex items-center justify-center text-3xl font-bold text-slate-800 border-[4px] border-white shadow-md group-hover:scale-110 transition-transform">
+                        {person.fullName ? person.fullName.charAt(0).toUpperCase() : "?"}
+                      </div>
+                    </div>
 
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
-            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:bg-emerald-600 group-hover:text-white transition-all">🤝</div>
-            <h3 className="font-bold text-xl text-slate-900 mb-3">1-on-1 Mentorship</h3>
-            <p className="text-slate-500">Get career guidance from seniors who have been in your shoes at top companies.</p>
-          </div>
+                    <div className="pt-14 pb-6 px-6 text-center flex-grow">
+                      <h3 className="text-xl font-bold text-slate-800 mb-1">{person.fullName}</h3>
+                      <p className={`text-xs font-bold uppercase tracking-wide mb-4 ${activeTab === "alumni" ? "text-blue-600" : "text-emerald-600"}`}>
+                        {person.branch || "Engineering"}
+                      </p>
+                      
+                      <div className="w-full h-px bg-gray-100 mb-4"></div>
+                      
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400 font-medium">Class of</span>
+                          <span className="text-slate-800 font-bold">{person.graduationYear}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-400 font-medium">Current Role</span>
+                          <span className="text-slate-800 font-bold truncate max-w-[120px]">{person.currentCompany || "Student"}</span>
+                        </div>
+                      </div>
 
-          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group">
-            <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:bg-purple-600 group-hover:text-white transition-all">💼</div>
-            <h3 className="font-bold text-xl text-slate-900 mb-3">Exclusive Jobs</h3>
-            <p className="text-slate-500">Access internal job postings and referral opportunities shared directly by alumni.</p>
-          </div>
-        </div>
-      </section>
+                      <button className={`w-full mt-6 py-2.5 text-white rounded-xl font-semibold active:scale-95 transition-all shadow-md hover:shadow-lg ${activeTab === "alumni" ? "bg-slate-900 hover:bg-blue-700" : "bg-slate-900 hover:bg-emerald-600"}`}>
+                        View Profile
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </>
+        )}
 
-      {/* Upcoming Events Preview */}
-      <section className="py-20 bg-slate-100 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-3xl font-bold text-slate-900">Upcoming Events</h2>
-              <p className="text-slate-600 mt-2">Don't miss out on these networking opportunities.</p>
-            </div>
-            <Link to="/events" className="text-blue-600 font-bold hover:underline">View all events →</Link>
+        {!loading && displayList.length === 0 && (
+          <div className="col-span-full text-center py-20">
+            <div className="text-6xl mb-4">📭</div>
+            <p className="text-2xl text-slate-400 font-bold mb-2">No profiles found.</p>
+            <p className="text-gray-400">Try adjusting your search or switching tabs.</p>
           </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-2xl flex gap-6 items-center border border-slate-200">
-              <div className="bg-blue-600 text-white p-4 rounded-xl text-center min-w-[80px]">
-                <p className="text-sm uppercase">Jan</p>
-                <p className="text-2xl font-bold">15</p>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg">Global Alumni Meetup 2026</h4>
-                <p className="text-slate-500 text-sm">Virtual • 6:00 PM IST</p>
-              </div>
-            </div>
-            <div className="bg-white p-6 rounded-2xl flex gap-6 items-center border border-slate-200">
-              <div className="bg-slate-200 text-slate-700 p-4 rounded-xl text-center min-w-[80px]">
-                <p className="text-sm uppercase">Feb</p>
-                <p className="text-2xl font-bold">02</p>
-              </div>
-              <div>
-                <h4 className="font-bold text-lg">Tech Career Fair</h4>
-                <p className="text-slate-500 text-sm">Main Campus • 10:00 AM</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
     </div>
   );
 };

@@ -5,7 +5,6 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Jump to top of the page on route change
     window.scrollTo(0, 0);
   }, [pathname]);
 
