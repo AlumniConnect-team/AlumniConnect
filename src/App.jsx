@@ -15,6 +15,7 @@ import { Toaster } from "react-hot-toast";
 import { UserProvider } from "./context/UserContext";
 import Profile from "./Components/profile/Profile";
 import Updatepwd from "./Components/forgotpassword";
+import JobDetails from "./Components/jobs&Referral/JobDetails";
 
 function App() {
   return (
@@ -47,6 +48,7 @@ function App() {
           />
           <Route path="/profile" element={<Profile />} />
           <Route path="/jobs" element={<JobReferrals />} />
+          <Route path="/jobs/:id" element={<JobDetails />} />
         </Routes>
       </div>
     </Router>

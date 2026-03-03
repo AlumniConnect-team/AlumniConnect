@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import PostJob from "./PostJob";
 import { UserContext } from "../../context/UserContext";
 
@@ -44,7 +46,6 @@ const ApiAutocomplete = ({ label, placeholder, apiType, onSelect }) => {
         }
         setSuggestions(results);
       } catch (e) {
-        console.error("Autocomplete fetch error:", e);
       } finally {
         setIsLoading(false);
       }
@@ -96,6 +97,7 @@ const ApiAutocomplete = ({ label, placeholder, apiType, onSelect }) => {
 };
 
 const JobReferrals = () => {
+  const navigate = useNavigate();
   const [showPostJob, setShowPostJob] = useState(false);
   const [jobList, setJobList] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
@@ -105,7 +107,7 @@ const JobReferrals = () => {
 
   const { user } = useContext(UserContext);
   const currentYear = new Date().getFullYear();
-  const isAlumni = user?.graduationYear < currentYear;
+  const isAlumni = user?.graduationYear <= currentYear;
 
   const fetchJobs = async () => {
     const token = localStorage.getItem("token");
@@ -114,18 +116,33 @@ const JobReferrals = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_SERVER_DOMAIN}/api/jobs`, {
         headers: {
-          "x-auth-token": token 
+          "x-auth-token": token
         }
       });
       if (Array.isArray(res.data)) setJobList(res.data);
     } catch (error) {
-      console.error("Error fetching jobs:", error);
     }
   };
 
   useEffect(() => {
     fetchJobs();
   }, [showPostJob]);
+
+  const handleDelete = async (jobId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`${import.meta.env.VITE_SERVER_DOMAIN}/api/jobs/${jobId}`, {
+        headers: {
+          "x-auth-token": token
+        }
+      });
+      setJobList(jobList.filter((job) => job._id !== jobId));
+      toast.success("Job deleted successfully");
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.error || "Failed to delete job");
+    }
+  };
 
   const filteredJobs = jobList.filter((job) => {
     const matchText = job.company.toLowerCase().includes(textSearch.toLowerCase());
@@ -300,12 +317,18 @@ const JobReferrals = () => {
                         <p className="text-xs text-slate-500">Class of {job.batch}</p>
                       </div>
                       <div className="flex gap-3 w-full md:w-auto">
-                        {job.referralAvailable && (
-                          <button className="flex-1 md:flex-none bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg text-sm font-bold border border-emerald-100 hover:bg-emerald-100 transition-colors">
-                            Ask Referral
+                        {user && job.postedBy === user.fullName && (
+                          <button 
+                            onClick={() => handleDelete(job._id)}
+                            className="flex-1 md:flex-none bg-red-50 text-red-600 px-4 py-2 rounded-lg text-sm font-bold border border-red-100 hover:bg-red-100 transition-colors"
+                          >
+                            Delete
                           </button>
                         )}
-                        <button className="flex-1 md:flex-none bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors">
+                        <button 
+                          onClick={() => navigate(`/jobs/${job._id}`)} 
+                          className="flex-1 md:flex-none bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors"
+                        >
                           Details
                         </button>
                       </div>
