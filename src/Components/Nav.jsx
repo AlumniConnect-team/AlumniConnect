@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -16,12 +16,19 @@ const Navbar = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const navLinkStyles = ({ isActive }) =>
+    `no-underline text-base transition-all duration-300 pb-1 ${
+      isActive
+        ? "text-blue-600 font-bold border-b-2 border-blue-600"
+        : "text-gray-600 font-semibold hover:text-blue-600"
+    }`;
+
   return (
-    <nav className="bg-white h-[80px] w-full flex items-center px-[5%] shadow-md sticky top-0 z-[1000]">
+    <nav className="bg-white h-[80px] w-full flex items-center px-[5%] shadow-md sticky top-0 z-[1000] tracking-wide">
       <div className="flex-1 flex justify-start">
         <Link
           to="/"
-          className="text-[24px] font-extrabold text-blue-600 flex items-center gap-2 cursor-pointer no-underline"
+          className="text-[24px] font-extrabold text-blue-600 flex items-center gap-2 cursor-pointer no-underline tracking-tight"
         >
           <span>🎓</span> AlumniConnect
         </Link>
@@ -29,28 +36,19 @@ const Navbar = () => {
 
       <ul className="list-none flex flex-[2] justify-center gap-8 m-0 p-0 max-lg:hidden">
         <li>
-          <Link
-            to="/"
-            className="no-underline text-gray-800 font-semibold text-[15px] hover:text-blue-600 transition-colors"
-          >
+          <NavLink to="/" className={navLinkStyles}>
             Home
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link
-            to="/events"
-            className="no-underline text-gray-800 font-semibold text-[15px] hover:text-blue-600 transition-colors"
-          >
+          <NavLink to="/events" className={navLinkStyles}>
             Events
-          </Link>
+          </NavLink>
         </li>
         <li>
-          <Link
-            to="/jobs"
-            className="no-underline text-gray-800 font-semibold text-[15px] hover:text-blue-600 transition-colors whitespace-nowrap"
-          >
+          <NavLink to="/jobs" className={navLinkStyles}>
             Jobs & Referrals
-          </Link>
+          </NavLink>
         </li>
       </ul>
 
@@ -83,7 +81,7 @@ const Navbar = () => {
               <div className="absolute right-0 top-[50px] w-[200px] bg-white shadow-xl rounded-lg border border-gray-100 overflow-hidden py-2 flex flex-col z-[1100]">
                 <Link
                   to="/dashboard"
-                  className="px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 no-underline"
+                  className="px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 no-underline font-medium"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <span>📊</span> Dashboard
@@ -91,7 +89,7 @@ const Navbar = () => {
 
                 <Link
                   to="/profile"
-                  className="px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 no-underline"
+                  className="px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 no-underline font-medium"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <span>⚙️</span> My Profile
@@ -99,7 +97,7 @@ const Navbar = () => {
 
                 <button
                   onClick={handleLogout}
-                  className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-4 py-3 text-sm text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2 cursor-pointer font-medium"
                 >
                   <span>🚪</span> Logout
                 </button>
