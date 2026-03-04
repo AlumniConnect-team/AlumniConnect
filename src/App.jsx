@@ -16,45 +16,42 @@ import { UserProvider } from "./context/UserContext";
 import Profile from "./Components/profile/Profile";
 import Updatepwd from "./Components/forgotpassword";
 import JobDetails from "./Components/jobs&Referral/JobDetails";
+import Dashboard from "./Components/Dashboard";
 
 function App() {
   return (
     <div>
       <UserProvider>
-    <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
-    <Router>
-      <div className="min-h-screen bg-slate-50">
-        <Navbar />
-      
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/updatepwd" element={<Updatepwd/>}/>
-            <Route path="/events">
-              <Route index element={<Events />} />
-              <Route path="register" element={<RegisterEventPage />} />
-              <Route path="agenda" element={<ViewAgendaPage />} />
-              <Route
-                path="submit-proposal"
-                element={<SubmitEventProposalPage />}
-              />
-              <Route path="guidelines" element={<HostGuidelinesPage />} />
-            </Route>
-          <Route
-            path="/dashboard"
-            element={<div className="p-10 text-2xl">Dashboard Page</div>}
-          />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/jobs" element={<JobReferrals />} />
-          <Route path="/jobs/:id" element={<JobDetails />} />
-        </Routes>
-      </div>
-    </Router>
-    </UserProvider>
-</div>
+        <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+        <Router>
+          <div className="min-h-screen bg-slate-50">
+            <Navbar />
 
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/updatepwd" element={<Updatepwd />} />
+              <Route path="/events">
+                <Route index element={<Events />} />
+                <Route path="register" element={<RegisterEventPage />} />
+                <Route path="agenda" element={<ViewAgendaPage />} />
+                <Route
+                  path="submit-proposal"
+                  element={<SubmitEventProposalPage />}
+                />
+                <Route path="guidelines" element={<HostGuidelinesPage />} />
+              </Route>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/jobs" element={<JobReferrals />} />
+              <Route path="/jobs/:id" element={<JobDetails />} />
+            </Routes>
+          </div>
+        </Router>
+      </UserProvider>
+    </div>
   );
 }
 

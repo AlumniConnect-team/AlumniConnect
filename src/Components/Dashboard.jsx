@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const [data, setData] = useState(null);
+  const [myEvents, setMyEvents] = useState({ registered: [], hosted: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchDashboard = async () => {
+    const fetchDashboardData = async () => {
       try {
         const token = localStorage.getItem("token");
 
@@ -17,17 +20,29 @@ const Dashboard = () => {
           return;
         }
 
-        const res = await axios.get(
+        const headers = {
+          "x-auth-token": token,
+          Authorization: `Bearer ${token}`,
+        };
+
+        const profileRes = await axios.get(
           "http://localhost:5000/api/profile/dashboard",
-          {
-            headers: {
-              // We send the token in BOTH formats to ensure the backend accepts it
-              "x-auth-token": token,
-              Authorization: `Bearer ${token}`,
-            },
-          },
+          { headers },
         );
-        setData(res.data);
+        setData(profileRes.data);
+
+        try {
+          const eventsRes = await axios.get(
+            "http://localhost:5000/api/events/my-events",
+            { headers },
+          );
+          setMyEvents({
+            registered: eventsRes.data.registeredEvents || [],
+            hosted: eventsRes.data.hostedEvents || [],
+          });
+        } catch (eventErr) {
+          console.error("Failed to fetch events for dashboard", eventErr);
+        }
       } catch (err) {
         console.error("Dashboard error", err);
         setError(
@@ -38,7 +53,7 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-    fetchDashboard();
+    fetchDashboardData();
   }, []);
 
   if (loading) {
@@ -68,6 +83,12 @@ const Dashboard = () => {
   }
 
   const isAlumni = data.role === "Alumni";
+  const now = new Date();
+
+  const upcomingEvents = myEvents.registered.filter(
+    (e) => new Date(e.date) >= now,
+  );
+  const pastEvents = myEvents.registered.filter((e) => new Date(e.date) < now);
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-10">
@@ -90,7 +111,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {isAlumni ? (
             <>
               <StatCard
@@ -100,32 +121,26 @@ const Dashboard = () => {
                 color="blue"
               />
               <StatCard
-                title="Upcoming Sessions"
-                value={data.stats?.upcomingSessions || 0}
-                icon="📅"
+                title="Events Hosted"
+                value={myEvents.hosted.length}
+                icon="🎤"
                 color="purple"
               />
               <StatCard
-                title="Money Earned"
-                value={`$${data.stats?.totalEarned || 0}`}
-                icon="💰"
+                title="Upcoming Events"
+                value={upcomingEvents.length}
+                icon="📅"
                 color="green"
               />
               <StatCard
-                title="Free Classes"
-                value={data.stats?.freeClasses || 0}
-                icon="🎁"
+                title="Events Attended"
+                value={pastEvents.length}
+                icon="✅"
                 color="orange"
               />
             </>
           ) : (
             <>
-              <StatCard
-                title="Money Spent"
-                value={`$${data.stats?.amountSpent || 0}`}
-                icon="💸"
-                color="red"
-              />
               <StatCard
                 title="Seniors Followed"
                 value={data.stats?.seniorsFollowed || 0}
@@ -139,25 +154,125 @@ const Dashboard = () => {
                 color="indigo"
               />
               <StatCard
-                title="Active Courses"
-                value={data.stats?.activeCourses || 0}
-                icon="📚"
+                title="Upcoming Events"
+                value={upcomingEvents.length}
+                icon="📅"
                 color="teal"
+              />
+              <StatCard
+                title="Events Attended"
+                value={pastEvents.length}
+                icon="✅"
+                color="green"
               />
             </>
           )}
         </div>
 
-        <div className="mt-10 bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-          <h2 className="text-xl font-bold mb-4">
-            {isAlumni
-              ? "Recent Student Requests"
-              : "Recent Messages from Seniors"}
-          </h2>
-          <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg">
-            No recent conversations found. Start a new one from the{" "}
-            {isAlumni ? "Search Students" : "Search Alumni"} page!
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold mb-4 text-slate-800">
+              Upcoming Events (Registered)
+            </h2>
+            {upcomingEvents.length === 0 ? (
+              <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center">
+                You haven't registered for any upcoming events. <br />
+                <button
+                  onClick={() => navigate("/events")}
+                  className="text-blue-600 font-bold mt-2 hover:underline"
+                >
+                  Browse Events
+                </button>
+              </div>
+            ) : (
+              <ul className="space-y-4">
+                {upcomingEvents.map((event) => (
+                  <li
+                    key={event._id}
+                    className="p-4 bg-slate-50 rounded-lg border border-slate-100"
+                  >
+                    <p className="font-bold text-slate-800">{event.title}</p>
+                    <p className="text-sm text-blue-600">
+                      {new Date(event.date).toLocaleDateString()}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
+
+          <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+            <h2 className="text-xl font-bold mb-4 text-slate-800">
+              Event History
+            </h2>
+            {pastEvents.length === 0 ? (
+              <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center">
+                No past event history found.
+              </div>
+            ) : (
+              <ul className="space-y-4">
+                {pastEvents.map((event) => (
+                  <li
+                    key={event._id}
+                    className="p-4 bg-slate-50 rounded-lg border border-slate-100 flex justify-between items-center"
+                  >
+                    <div>
+                      <p className="font-bold text-slate-800">{event.title}</p>
+                      <p className="text-sm text-slate-500">
+                        {new Date(event.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">
+                      Attended
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {isAlumni && (
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold text-slate-800">
+                  Events You Are Hosting
+                </h2>
+                <button
+                  onClick={() => navigate("/events")}
+                  className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700"
+                >
+                  + Propose New
+                </button>
+              </div>
+
+              {myEvents.hosted.length === 0 ? (
+                <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center">
+                  You haven't proposed any events yet. Share your expertise with
+                  the community!
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {myEvents.hosted.map((event) => (
+                    <div
+                      key={event._id}
+                      className="p-4 bg-blue-50 rounded-lg border border-blue-100"
+                    >
+                      <p className="font-bold text-slate-800">{event.title}</p>
+                      <p className="text-sm text-slate-600 mt-1">
+                        Status:{" "}
+                        <span className="text-blue-600 font-bold">
+                          {event.status || "Approved"}
+                        </span>
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        Attendees: <b>{event.attendees?.length || 0}</b>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
