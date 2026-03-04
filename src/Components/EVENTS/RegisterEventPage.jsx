@@ -99,7 +99,10 @@ const RegisterEventPage = () => {
           </div>
 
           <div className="text-center">
-            <a href="#" className="text-sm text-slate-500 hover:text-blue-600">
+            <a
+              href="/events"
+              className="text-sm text-slate-500 hover:text-blue-600"
+            >
               Cancel and go back
             </a>
           </div>
