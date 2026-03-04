@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 
 const Events = () => {
   const [user, setUser] = useState(null);
+  const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -25,9 +26,10 @@ const Events = () => {
             headers: {
               "x-auth-token": token,
             },
-          }
+          },
         );
         setUser(res.data);
+        await fetchEvents(token);
         setLoading(false);
       } catch (err) {
         console.error(err);
@@ -39,6 +41,36 @@ const Events = () => {
 
     fetchUserData();
   }, [navigate]);
+
+  const fetchEvents = async (token) => {
+    try {
+      const res = await axios.get(
+        import.meta.env.VITE_SERVER_DOMAIN + "/api/events",
+        {
+          headers: { "x-auth-token": token },
+        },
+      );
+      setEvents(res.data);
+    } catch (error) {
+      console.error("Failed to load events", error);
+    }
+  };
+
+  const handleRegister = async (eventId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${import.meta.env.VITE_SERVER_DOMAIN}/api/events/${eventId}/register`,
+        {},
+        { headers: { "x-auth-token": token } },
+      );
+
+      toast.success("Successfully registered for the event!");
+      fetchEvents(token);
+    } catch (error) {
+      toast.error(error.response?.data?.error || "Failed to register");
+    }
+  };
 
   const isAlumni = user
     ? user.graduationYear < new Date().getFullYear()
@@ -81,13 +113,13 @@ const Events = () => {
 
   const nextEvent = () => {
     setCurrentIndex((prev) =>
-      prev === featuredEvents.length - 1 ? 0 : prev + 1
+      prev === featuredEvents.length - 1 ? 0 : prev + 1,
     );
   };
 
   const prevEvent = () => {
     setCurrentIndex((prev) =>
-      prev === 0 ? featuredEvents.length - 1 : prev - 1
+      prev === 0 ? featuredEvents.length - 1 : prev - 1,
     );
   };
 
@@ -235,98 +267,64 @@ const Events = () => {
 
       <section className="pb-16 px-6 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          <div className="bg-white group rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden cursor-pointer">
-            <div className="relative h-48 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1564869731584-9f6c2d46dc5c?auto=format&fit=crop&w=800&q=80"
-                alt="Event"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm">
-                15 JAN
-              </div>
+          {events.length === 0 ? (
+            <div className="col-span-full text-center py-10 text-slate-500">
+              No upcoming community events found. Propose one below!
             </div>
-            <div className="p-6">
-              <span className="text-blue-600 text-xs font-bold uppercase tracking-wider">
-                Meetup
-              </span>
-              <h3 className="font-bold text-slate-900 mt-2 mb-2 text-xl group-hover:text-blue-600 transition">
-                Alumni Meetup 2026
-              </h3>
-              <p className="text-sm text-slate-500 mb-4 line-clamp-2">
-                Join our annual alumni meetup and network with past graduates in
-                the main auditorium.
-              </p>
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                <span className="text-sm text-slate-400">Bangalore Campus</span>
-                <span className="text-blue-600 text-sm font-semibold">
-                  Free
-                </span>
-              </div>
-            </div>
-          </div>
+          ) : (
+            events.map((event) => (
+              <div
+                key={event._id}
+                className="bg-white group rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden flex flex-col"
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=800&q=80"
+                    alt="Event Placeholder"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm">
+                    {new Date(event.date)
+                      .toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "short",
+                      })
+                      .toUpperCase()}
+                  </div>
+                </div>
 
-          <div className="bg-white group rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden cursor-pointer">
-            <div className="relative h-48 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1573164574390-19d0b3a0f8e7?auto=format&fit=crop&w=800&q=80"
-                alt="Event"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm">
-                28 FEB
-              </div>
-            </div>
-            <div className="p-6">
-              <span className="text-blue-600 text-xs font-bold uppercase tracking-wider">
-                Webinar
-              </span>
-              <h3 className="font-bold text-slate-900 mt-2 mb-2 text-xl group-hover:text-blue-600 transition">
-                Tech Career Roadmap
-              </h3>
-              <p className="text-sm text-slate-500 mb-4 line-clamp-2">
-                Learn from industry experts from Google and Microsoft on how to
-                level up your career.
-              </p>
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                <span className="text-sm text-slate-400">Online (Zoom)</span>
-                <span className="text-blue-600 text-sm font-semibold">
-                  Free
-                </span>
-              </div>
-            </div>
-          </div>
+                <div className="p-6 flex-grow flex flex-col">
+                  <span className="text-blue-600 text-xs font-bold uppercase tracking-wider">
+                    {event.format}
+                  </span>
+                  <h3 className="font-bold text-slate-900 mt-2 mb-2 text-xl group-hover:text-blue-600 transition">
+                    {event.title}
+                  </h3>
+                  <p className="text-sm text-slate-500 mb-4 line-clamp-2">
+                    {event.description}
+                  </p>
 
-          <div className="bg-white group rounded-2xl shadow-sm border border-slate-200 hover:shadow-xl hover:-translate-y-1 transition duration-300 overflow-hidden cursor-pointer">
-            <div className="relative h-48 overflow-hidden">
-              <img
-                src="https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=800&q=80"
-                alt="Event"
-                className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
-              />
-              <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-slate-900 shadow-sm">
-                12 MAR
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-4 mb-4">
+                      <span className="text-sm text-slate-400">
+                        👤 {event.proposedBy}
+                      </span>
+                      <span className="text-blue-600 text-sm font-semibold">
+                        👥 {event.attendees?.length || 0} Registered
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => handleRegister(event._id)}
+                      className="w-full bg-slate-900 text-white font-semibold py-2 rounded-lg hover:bg-blue-600 transition"
+                    >
+                      Register Now
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="p-6">
-              <span className="text-blue-600 text-xs font-bold uppercase tracking-wider">
-                Networking
-              </span>
-              <h3 className="font-bold text-slate-900 mt-2 mb-2 text-xl group-hover:text-blue-600 transition">
-                Start-up Mixer
-              </h3>
-              <p className="text-sm text-slate-500 mb-4 line-clamp-2">
-                Connect with alumni founders and VCs. Pitch your ideas or find
-                your next co-founder.
-              </p>
-              <div className="flex items-center justify-between border-t border-slate-100 pt-4">
-                <span className="text-sm text-slate-400">Innovation Hub</span>
-                <span className="text-blue-600 text-sm font-semibold">
-                  $10 Entry
-                </span>
-              </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </section>
 
