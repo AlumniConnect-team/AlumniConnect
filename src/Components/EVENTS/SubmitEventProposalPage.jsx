@@ -1,18 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const SubmitEventProposalPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     date: "",
     format: "Webinar (Online)",
     description: "",
+    meetingLink: "",
     logistics: [],
   });
+
+  useEffect(() => {
+    if (id) {
+      setIsEditing(true);
+      const fetchEvent = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const res = await axios.get(
+            import.meta.env.VITE_SERVER_DOMAIN + `/api/events/${id}`,
+            { headers: { "x-auth-token": token } }
+          );
+          const event = res.data;
+          setFormData({
+            title: event.title,
+            date: event.date ? new Date(event.date).toISOString().split("T")[0] : "",
+            format: event.format,
+            description: event.description,
+            meetingLink: event.meetingLink || "",
+            logistics: event.logistics || [],
+          });
+        } catch (error) {
+          toast.error("Failed to load event for editing");
+          navigate("/events");
+        }
+      };
+      fetchEvent();
+    }
+  }, [id, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -40,19 +71,26 @@ const SubmitEventProposalPage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      await axios.post(
-        import.meta.env.VITE_SERVER_DOMAIN + "/api/events/proposal",
-        formData,
-        {
-          headers: { "x-auth-token": token },
-        },
-      );
-
-      toast.success("Proposal submitted successfully!");
-      navigate("/events");
+      
+      if (isEditing) {
+        await axios.put(
+          import.meta.env.VITE_SERVER_DOMAIN + `/api/events/${id}`,
+          formData,
+          { headers: { "x-auth-token": token } }
+        );
+        toast.success("Event updated successfully!");
+        navigate(`/events/${id}`);
+      } else {
+        await axios.post(
+          import.meta.env.VITE_SERVER_DOMAIN + "/api/events/proposal",
+          formData,
+          { headers: { "x-auth-token": token } }
+        );
+        toast.success("Proposal submitted successfully!");
+        navigate("/events");
+      }
     } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.error || "Failed to submit proposal");
+      toast.error(error.response?.data?.error || "Failed to submit");
     } finally {
       setLoading(false);
     }
@@ -63,10 +101,10 @@ const SubmitEventProposalPage = () => {
       <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-slate-200">
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-extrabold text-slate-900">
-            Host an Event
+            {isEditing ? "Edit Event" : "Host an Event"}
           </h1>
           <p className="mt-2 text-slate-600">
-            Share your knowledge or bring the community together.
+            {isEditing ? "Update your event details below." : "Share your knowledge or bring the community together."}
           </p>
         </div>
 
@@ -81,21 +119,21 @@ const SubmitEventProposalPage = () => {
               value={formData.title}
               onChange={handleChange}
               placeholder="e.g., Intro to AI Ethics"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
             />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">
-                Proposed Date *
+                Date *
               </label>
               <input
                 type="date"
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition"
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
               />
             </div>
 
@@ -107,16 +145,28 @@ const SubmitEventProposalPage = () => {
                 name="format"
                 value={formData.format}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition bg-white"
+                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
               >
                 <option value="Webinar (Online)">Webinar (Online)</option>
-                <option value="Workshop (In-person)">
-                  Workshop (In-person)
-                </option>
+                <option value="Workshop (In-person)">Workshop (In-person)</option>
                 <option value="Meetup/Networking">Meetup/Networking</option>
                 <option value="Reunion">Reunion</option>
               </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Event/Meeting Link (Optional)
+            </label>
+            <input
+              type="text"
+              name="meetingLink"
+              value={formData.meetingLink}
+              onChange={handleChange}
+              placeholder="https://zoom.us/j/... or Maps link"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
+            />
           </div>
 
           <div>
@@ -129,7 +179,7 @@ const SubmitEventProposalPage = () => {
               value={formData.description}
               onChange={handleChange}
               placeholder="What will happen during the event?"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition"
+              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none"
             ></textarea>
           </div>
 
@@ -138,33 +188,18 @@ const SubmitEventProposalPage = () => {
               Logistics Required
             </label>
             <div className="flex gap-4 mt-2">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value="Projector/AV"
-                  onChange={handleCheckboxChange}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-slate-700 text-sm">Projector/AV</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value="Auditorium"
-                  onChange={handleCheckboxChange}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-slate-700 text-sm">Auditorium</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  value="Zoom License"
-                  onChange={handleCheckboxChange}
-                  className="rounded text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-slate-700 text-sm">Zoom License</span>
-              </label>
+              {["Projector/AV", "Auditorium", "Zoom License"].map((item) => (
+                <label key={item} className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    value={item}
+                    checked={formData.logistics.includes(item)}
+                    onChange={handleCheckboxChange}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-slate-700 text-sm">{item}</span>
+                </label>
+              ))}
             </div>
           </div>
 
@@ -174,11 +209,8 @@ const SubmitEventProposalPage = () => {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-lg disabled:opacity-50"
             >
-              {loading ? "Submitting..." : "Submit Proposal"}
+              {loading ? "Saving..." : isEditing ? "Save Changes" : "Submit Proposal"}
             </button>
-            <p className="text-xs text-slate-500 text-center mt-3">
-              Your proposal will be reviewed by the admin within 24 hours.
-            </p>
           </div>
         </form>
       </div>

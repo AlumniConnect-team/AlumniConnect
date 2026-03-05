@@ -17,6 +17,7 @@ import Profile from "./Components/profile/Profile";
 import Updatepwd from "./Components/forgotpassword";
 import JobDetails from "./Components/jobs&Referral/JobDetails";
 import Dashboard from "./Components/Dashboard";
+import EventDetails from "./Components/EVENTS/EventDetails";
 
 function App() {
   return (
@@ -42,6 +43,8 @@ function App() {
                   element={<SubmitEventProposalPage />}
                 />
                 <Route path="guidelines" element={<HostGuidelinesPage />} />
+                <Route path="/events/:id" element={<EventDetails />} />
+                <Route path="/events/edit/:id" element={<SubmitEventProposalPage />} />
               </Route>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />

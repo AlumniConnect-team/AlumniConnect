@@ -26,28 +26,27 @@ const Dashboard = () => {
         };
 
         const profileRes = await axios.get(
-          "http://localhost:5000/api/profile/dashboard",
-          { headers },
+          import.meta.env.VITE_SERVER_DOMAIN + "/api/profile/dashboard",
+          { headers }
         );
         setData(profileRes.data);
 
         try {
           const eventsRes = await axios.get(
-            "http://localhost:5000/api/events/my-events",
-            { headers },
+            import.meta.env.VITE_SERVER_DOMAIN + "/api/events/my-events",
+            { headers }
           );
           setMyEvents({
             registered: eventsRes.data.registeredEvents || [],
             hosted: eventsRes.data.hostedEvents || [],
           });
         } catch (eventErr) {
-          console.error("Failed to fetch events for dashboard", eventErr);
+          console.error(eventErr);
         }
       } catch (err) {
-        console.error("Dashboard error", err);
         setError(
           err.response?.data?.msg ||
-            "Failed to load dashboard data. (Authorization Error)",
+            "Failed to load dashboard data. (Authorization Error)"
         );
       } finally {
         setLoading(false);
@@ -82,13 +81,25 @@ const Dashboard = () => {
     return <div className="p-10 text-center">No profile data found.</div>;
   }
 
-  const isAlumni = data.role === "Alumni";
-  const now = new Date();
+  const isAlumni =
+    data.role === "Alumni" ||
+    (data.user.graduationYear &&
+      parseInt(data.user.graduationYear) < new Date().getFullYear());
 
-  const upcomingEvents = myEvents.registered.filter(
-    (e) => new Date(e.date) >= now,
-  );
-  const pastEvents = myEvents.registered.filter((e) => new Date(e.date) < now);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingEvents = myEvents.registered.filter((e) => {
+    const eventDate = new Date(e.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate >= today;
+  });
+
+  const pastEvents = myEvents.registered.filter((e) => {
+    const eventDate = new Date(e.date);
+    eventDate.setHours(0, 0, 0, 0);
+    return eventDate < today;
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-10">
@@ -98,7 +109,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-extrabold text-slate-800">
               {isAlumni ? "Alumni Console" : "Student Portal"}
             </h1>
-            <p className="text-slate-500">Welcome back, {data.user.name}</p>
+            <p className="text-slate-500">Welcome back, {data.user.name || data.user.fullName}</p>
           </div>
           <div
             className={`px-4 py-2 rounded-full text-sm font-bold ${
@@ -115,8 +126,8 @@ const Dashboard = () => {
           {isAlumni ? (
             <>
               <StatCard
-                title="Total Students"
-                value={data.stats?.studentsEnrolled || 0}
+                title="Total Juniors"
+                value={data.stats?.totalStudents || data.stats?.studentsEnrolled || 0}
                 icon="👨‍🎓"
                 color="blue"
               />
@@ -142,14 +153,14 @@ const Dashboard = () => {
           ) : (
             <>
               <StatCard
-                title="Seniors Followed"
-                value={data.stats?.seniorsFollowed || 0}
+                title="Alumni Network"
+                value={data.stats?.totalAlumni || data.stats?.seniorsFollowed || 0}
                 icon="🤝"
                 color="blue"
               />
               <StatCard
-                title="Messages"
-                value={data.stats?.unreadMessages || 0}
+                title="Connections"
+                value={data.stats?.connections || data.stats?.unreadMessages || 0}
                 icon="📩"
                 color="indigo"
               />
@@ -175,11 +186,11 @@ const Dashboard = () => {
               Upcoming Events (Registered)
             </h2>
             {upcomingEvents.length === 0 ? (
-              <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center">
-                You haven't registered for any upcoming events. <br />
+              <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center flex flex-col items-center justify-center">
+                <span className="mb-2">You haven't registered for any upcoming events.</span>
                 <button
                   onClick={() => navigate("/events")}
-                  className="text-blue-600 font-bold mt-2 hover:underline"
+                  className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold mt-2 hover:bg-blue-100 transition"
                 >
                   Browse Events
                 </button>
@@ -189,12 +200,22 @@ const Dashboard = () => {
                 {upcomingEvents.map((event) => (
                   <li
                     key={event._id}
-                    className="p-4 bg-slate-50 rounded-lg border border-slate-100"
+                    className="p-4 bg-slate-50 rounded-lg border border-slate-100 flex flex-col sm:flex-row justify-between sm:items-center gap-2"
                   >
-                    <p className="font-bold text-slate-800">{event.title}</p>
-                    <p className="text-sm text-blue-600">
-                      {new Date(event.date).toLocaleDateString()}
-                    </p>
+                    <div>
+                      <p className="font-bold text-slate-800">{event.title}</p>
+                      <p className="text-sm text-blue-600 font-medium">
+                        {new Date(event.date).toLocaleDateString("en-US", {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <span className="text-xs font-bold bg-blue-100 text-blue-700 px-3 py-1 rounded-full w-max">
+                      {event.format || "Upcoming"}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -219,7 +240,11 @@ const Dashboard = () => {
                     <div>
                       <p className="font-bold text-slate-800">{event.title}</p>
                       <p className="text-sm text-slate-500">
-                        {new Date(event.date).toLocaleDateString()}
+                        {new Date(event.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </p>
                     </div>
                     <span className="text-xs font-bold bg-green-100 text-green-700 px-2 py-1 rounded">
@@ -232,43 +257,62 @@ const Dashboard = () => {
           </div>
 
           {isAlumni && (
-            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2">
-              <div className="flex justify-between items-center mb-4">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 lg:col-span-2 mt-4 lg:mt-0">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <h2 className="text-xl font-bold text-slate-800">
                   Events You Are Hosting
                 </h2>
                 <button
-                  onClick={() => navigate("/events")}
-                  className="text-sm bg-blue-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-blue-700"
+                  onClick={() => navigate("/events/submit-proposal")}
+                  className="text-sm bg-blue-600 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition shadow-sm"
                 >
-                  + Propose New
+                  + Propose New Event
                 </button>
               </div>
 
               {myEvents.hosted.length === 0 ? (
-                <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center">
+                <div className="text-slate-500 italic p-6 border-2 border-dashed rounded-lg text-center bg-slate-50">
                   You haven't proposed any events yet. Share your expertise with
                   the community!
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {myEvents.hosted.map((event) => (
-                    <div
-                      key={event._id}
-                      className="p-4 bg-blue-50 rounded-lg border border-blue-100"
-                    >
-                      <p className="font-bold text-slate-800">{event.title}</p>
-                      <p className="text-sm text-slate-600 mt-1">
-                        Status:{" "}
-                        <span className="text-blue-600 font-bold">
-                          {event.status || "Approved"}
-                        </span>
-                      </p>
-                      <p className="text-sm text-slate-600">
-                        Attendees: <b>{event.attendees?.length || 0}</b>
-                      </p>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {myEvents.hosted.map((event) => {
+                    const eventDate = new Date(event.date);
+                    eventDate.setHours(0, 0, 0, 0);
+                    const isCompleted = eventDate < today;
+
+                    return (
+                      <div
+                        key={event._id}
+                        className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 hover:shadow-md transition flex flex-col"
+                      >
+                        <p className="font-bold text-slate-800 text-lg mb-1">{event.title}</p>
+                        <p className="text-sm text-slate-600 mb-3 font-medium">
+                          {new Date(event.date).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                        
+                        <div className="mt-auto space-y-2 pt-3 border-t border-blue-100">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-500 font-medium">Status</span>
+                            <span className={`text-xs font-bold px-2 py-1 rounded ${isCompleted ? 'bg-slate-200 text-slate-700' : 'bg-green-100 text-green-700'}`}>
+                              {isCompleted ? "Completed" : (event.status || "Upcoming")}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-slate-500 font-medium">Attendees</span>
+                            <span className="text-sm font-bold text-slate-800 bg-white px-2 py-0.5 rounded shadow-sm">
+                              {event.attendees?.length || 0}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -297,8 +341,8 @@ const StatCard = ({ title, value, icon, color }) => {
       >
         {icon}
       </div>
-      <div className="text-2xl font-black text-slate-800">{value}</div>
-      <p className="text-slate-400 text-sm font-semibold uppercase tracking-wider">
+      <div className="text-3xl font-black text-slate-800">{value}</div>
+      <p className="text-slate-400 text-xs mt-1 font-bold uppercase tracking-wider">
         {title}
       </p>
     </div>
