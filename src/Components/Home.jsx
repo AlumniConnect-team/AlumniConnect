@@ -106,7 +106,7 @@ const Home = () => {
             placeholder={`Search ${activeTab}...`}
             value={searchTerm}
             onChange={handleSearchChange}
-            className="w-full max-w-lg px-8 py-4 rounded-full border-none shadow-xl text-slate-900 focus:ring-4 focus:ring-blue-500/50 focus:outline-none text-lg placeholder-gray-400"
+            className="w-full max-w-lg px-8 py-4 rounded-full border-none shadow-xl text-white focus:ring-4 focus:ring-blue-500/50 focus:outline-none text-lg placeholder-gray-400"
           />
         </div>
       </div>
