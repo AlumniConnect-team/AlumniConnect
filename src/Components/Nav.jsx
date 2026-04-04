@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import NotificationDropdown from './NotificationDropDown'
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -69,6 +70,10 @@ const Navbar = () => {
             </Link>
           </>
         ) : (
+          <div className="flex items-center gap-4"> 
+            
+            {/* 1. The Notification Bell */}
+            <NotificationDropdown />
           <div className="relative">
             <button
               onClick={toggleDropdown}
@@ -76,7 +81,6 @@ const Navbar = () => {
             >
               <span className="text-[20px]">👤</span>
             </button>
-
             {isDropdownOpen && (
               <div className="absolute right-0 top-[50px] w-[200px] bg-white shadow-xl rounded-lg border border-gray-100 overflow-hidden py-2 flex flex-col z-[1100]">
                 <Link
@@ -103,6 +107,7 @@ const Navbar = () => {
                 </button>
               </div>
             )}
+          </div>
           </div>
         )}
       </div>

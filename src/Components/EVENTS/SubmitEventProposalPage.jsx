@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
+import { UserContext } from "../../context/UserContext"; // <-- Added Context Import
 
 const SubmitEventProposalPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const { user } = useContext(UserContext); // <-- Grab the user data
+  
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -16,6 +19,22 @@ const SubmitEventProposalPage = () => {
     meetingLink: "",
     logistics: [],
   });
+
+  // --- NEW SECURITY REDIRECT ---
+  useEffect(() => {
+    // Wait until the user data is loaded from context
+    if (user) {
+      const currentYear = new Date().getFullYear();
+      const isAlumni = user.graduationYear <= currentYear;
+      
+      // If they are a student, kick them back to the events page
+      if (!isAlumni) {
+        toast.error("Access Denied: Only alumni can propose events.");
+        navigate("/events");
+      }
+    }
+  }, [user, navigate]);
+  // -----------------------------
 
   useEffect(() => {
     if (id) {
@@ -95,6 +114,12 @@ const SubmitEventProposalPage = () => {
       setLoading(false);
     }
   };
+
+  // If the user hasn't loaded yet (or if they are a student being redirected),
+  // show a blank screen/loading state so they don't see the form flash.
+  if (!user || user.graduationYear > new Date().getFullYear()) {
+    return <div className="min-h-screen bg-slate-50"></div>; 
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -207,7 +232,7 @@ const SubmitEventProposalPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-lg disabled:opacity-50"
+              className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-lg disabled:opacity-50 cursor-pointer"
             >
               {loading ? "Saving..." : isEditing ? "Save Changes" : "Submit Proposal"}
             </button>

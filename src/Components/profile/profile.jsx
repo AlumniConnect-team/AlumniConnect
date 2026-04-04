@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { UserContext } from "../../context/UserContext"; // <-- Imported Context
 
 const Profile = () => {
+  const { setUser } = useContext(UserContext); // <-- Grab setUser to update global state
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-
     backupEmail: "",
     currentCompany: "",
     jobRole: "",
@@ -17,7 +18,6 @@ const Profile = () => {
 
   const [profilePic, setProfilePic] = useState(null);
   const [previewPic, setPreviewPic] = useState(null);
-
   const [resume, setResume] = useState(null);
 
   useEffect(() => {
@@ -40,6 +40,15 @@ const Profile = () => {
           yearsExperience: res.data.yearsExperience || "",
           bio: res.data.bio || "",
         });
+        
+        // If they already have a profile pic in the DB, show it in the preview
+        if (res.data.profilePic) {
+            const picUrl = res.data.profilePic.startsWith('http') 
+                ? res.data.profilePic 
+                : `${import.meta.env.VITE_SERVER_DOMAIN}/${res.data.profilePic.replace(/\\/g, '/')}`;
+            setPreviewPic(picUrl);
+        }
+
       } catch (err) {
         console.error(err);
         toast.error("Failed to load profile data");
@@ -88,6 +97,14 @@ const Profile = () => {
       );
 
       toast.success("Profile updated successfully!");
+
+      // --- NEW: UPDATE THE GLOBAL STATE SO NAVBAR CHANGES INSTANTLY ---
+      if (res.data.user) {
+        setUser(res.data.user);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+      }
+      // --------------------------------------------------------------
+
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.msg || "Update failed");
@@ -112,7 +129,7 @@ const Profile = () => {
         >
           <div className="md:col-span-1 flex flex-col items-center space-y-4">
             <div className="relative group">
-              <div className="w-40 h-40 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center  justify-center">
+              <div className="w-40 h-40 rounded-full border-4 border-gray-200 overflow-hidden bg-gray-100 flex items-center justify-center">
                 {previewPic ? (
                   <img
                     src={previewPic}
@@ -186,6 +203,19 @@ const Profile = () => {
                     value={formData.backupEmail}
                     onChange={handleChange}
                     placeholder="e.g. personal@gmail.com"
+                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-600 mb-1">
+                    Bio / About Me
+                  </label>
+                  <textarea
+                    name="bio"
+                    rows="3"
+                    value={formData.bio}
+                    onChange={handleChange}
+                    placeholder="Tell your network about yourself..."
                     className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -278,7 +308,7 @@ const Profile = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-8 py-3 bg-blue-600 text-white font-bold rounded-md shadow-md hover:bg-blue-700 transition-colors ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`px-8 py-3 bg-blue-600 text-white font-bold rounded-md shadow-md hover:bg-blue-700 transition-colors cursor-pointer ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 {loading ? "Saving..." : "Save Changes"}
               </button>
