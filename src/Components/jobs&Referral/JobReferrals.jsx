@@ -102,6 +102,7 @@ const JobReferrals = () => {
   const [jobList, setJobList] = useState([]);
   const [selectedRoles, setSelectedRoles] = useState([]);
   const [selectedLocations, setSelectedLocations] = useState([]);
+  const [selectedSkills, setSelectedSkills] = useState([]); // <--- NEW STATE FOR SKILLS
   const [referralOnly, setReferralOnly] = useState(false);
   const [textSearch, setTextSearch] = useState("");
 
@@ -144,16 +145,27 @@ const JobReferrals = () => {
     }
   };
 
+  // --- UPDATED FILTERING LOGIC ---
   const filteredJobs = jobList.filter((job) => {
     const matchText = job.company.toLowerCase().includes(textSearch.toLowerCase());
+    
     const matchRole =
       selectedRoles.length === 0 ||
       selectedRoles.some((r) => job.role.toLowerCase().includes(r.toLowerCase()));
+      
     const matchLocation =
       selectedLocations.length === 0 ||
       selectedLocations.some((l) =>
         job.location.toLowerCase().includes(l.split(",")[0].toLowerCase())
       );
+      
+    // NEW LOGIC: Check if the job has the selected skills
+    const matchSkills = 
+      selectedSkills.length === 0 ||
+      selectedSkills.some((skill) => 
+        job.tags?.some((tag) => tag.toLowerCase().includes(skill.toLowerCase()))
+      );
+
     const matchReferral = !referralOnly || job.referralAvailable;
     
     let isPosterSenior = true;
@@ -162,9 +174,11 @@ const JobReferrals = () => {
     }
 
     if (isAlumni) {
-      return matchText && matchRole && matchLocation && matchReferral && isPosterSenior;
+      // Added matchSkills to the return check
+      return matchText && matchRole && matchLocation && matchSkills && matchReferral && isPosterSenior;
     }
-    return matchText && matchRole && matchLocation && matchReferral;
+    // Added matchSkills to the return check
+    return matchText && matchRole && matchLocation && matchSkills && matchReferral;
   });
 
   if (showPostJob) {
@@ -202,6 +216,7 @@ const JobReferrals = () => {
               <h2 className="font-bold text-lg text-slate-800 mb-4 flex items-center gap-2">
                 Filters
               </h2>
+              
               <div className="mb-6">
                 <label className="block text-sm font-bold text-slate-700 mb-1">
                   Company Search
@@ -257,6 +272,42 @@ const JobReferrals = () => {
                   </span>
                 ))}
               </div>
+
+              {/* --- NEW SKILLS FILTER UI --- */}
+              <div className="mb-6">
+                <label className="block text-sm font-bold text-slate-700 mb-1">
+                  Skills / Tags
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. React (Press Enter)"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-purple-500"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && e.target.value.trim()) {
+                      e.preventDefault();
+                      const newSkill = e.target.value.trim();
+                      if (!selectedSkills.includes(newSkill)) {
+                        setSelectedSkills([...selectedSkills, newSkill]);
+                      }
+                      e.target.value = ""; // Clear input after adding
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {selectedSkills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs font-bold flex items-center gap-1 border border-purple-100"
+                  >
+                    {skill}
+                    <button onClick={() => setSelectedSkills(selectedSkills.filter((s) => s !== skill))}>
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              {/* --- END NEW SKILLS FILTER UI --- */}
 
               <label className="flex items-center justify-between cursor-pointer py-2 border-t border-slate-100 pt-4">
                 <span className="font-bold text-slate-700 text-sm">Referral Only</span>

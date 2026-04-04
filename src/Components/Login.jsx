@@ -17,7 +17,7 @@ const Login = () => {
   });
   const navigate = useNavigate();
   const {loginUser} = useContext(UserContext);
-  const handleSubmit = (e) => {
+const handleSubmit = (e) => {
     e.preventDefault();
     const finalData = { ...data };
 
@@ -29,11 +29,13 @@ const Login = () => {
     axios
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/login", finalData)
       .then((res) => {
-        localStorage.setItem("token", res.data.token);
-        localStorage.setItem("user", JSON.stringify(res.data));
         toast.success("Authentication successful");
         console.log(res.data);
-        loginUser(res.data.user);
+        
+        // We removed the raw localStorage calls from here.
+        // Now, we just pass BOTH the user data and the token to the context:
+        loginUser(res.data.user, res.data.token); 
+        
         navigate("/");
       })
       .catch((err) => {
