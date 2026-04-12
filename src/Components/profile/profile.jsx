@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { UserContext } from "../../context/UserContext"; // <-- Imported Context
+import API from "../../config";
 
 const Profile = () => {
   const { setUser } = useContext(UserContext); // <-- Grab setUser to update global state
@@ -24,7 +25,7 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get(
+        const res = await API.get(
           `${import.meta.env.VITE_SERVER_DOMAIN}/api/auth/me`,
           {
             headers: { "x-auth-token": token },
@@ -40,15 +41,14 @@ const Profile = () => {
           yearsExperience: res.data.yearsExperience || "",
           bio: res.data.bio || "",
         });
-        
+
         // If they already have a profile pic in the DB, show it in the preview
         if (res.data.profilePic) {
-            const picUrl = res.data.profilePic.startsWith('http') 
-                ? res.data.profilePic 
-                : `${import.meta.env.VITE_SERVER_DOMAIN}/${res.data.profilePic.replace(/\\/g, '/')}`;
-            setPreviewPic(picUrl);
+          const picUrl = res.data.profilePic.startsWith("http")
+            ? res.data.profilePic
+            : `${import.meta.env.VITE_SERVER_DOMAIN}/${res.data.profilePic.replace(/\\/g, "/")}`;
+          setPreviewPic(picUrl);
         }
-
       } catch (err) {
         console.error(err);
         toast.error("Failed to load profile data");
@@ -85,7 +85,7 @@ const Profile = () => {
       if (profilePic) dataToSend.append("profilePic", profilePic);
       if (resume) dataToSend.append("resume", resume);
 
-      const res = await axios.put(
+      const res = await API.put(
         `${import.meta.env.VITE_SERVER_DOMAIN}/api/profile/update`,
         dataToSend,
         {
@@ -104,7 +104,6 @@ const Profile = () => {
         localStorage.setItem("user", JSON.stringify(res.data.user));
       }
       // --------------------------------------------------------------
-
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.msg || "Update failed");

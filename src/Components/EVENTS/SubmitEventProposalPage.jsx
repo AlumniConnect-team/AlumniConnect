@@ -2,13 +2,14 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate, useParams } from "react-router-dom";
-import { UserContext } from "../../context/UserContext"; // <-- Added Context Import
+import { UserContext } from "../../context/UserContext"; 
+import API from "../../config";
 
 const SubmitEventProposalPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user } = useContext(UserContext); // <-- Grab the user data
-  
+  const { user } = useContext(UserContext); 
+
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,7 +27,7 @@ const SubmitEventProposalPage = () => {
     if (user) {
       const currentYear = new Date().getFullYear();
       const isAlumni = user.graduationYear <= currentYear;
-      
+
       // If they are a student, kick them back to the events page
       if (!isAlumni) {
         toast.error("Access Denied: Only alumni can propose events.");
@@ -42,14 +43,16 @@ const SubmitEventProposalPage = () => {
       const fetchEvent = async () => {
         try {
           const token = localStorage.getItem("token");
-          const res = await axios.get(
+          const res = await API.get(
             import.meta.env.VITE_SERVER_DOMAIN + `/api/events/${id}`,
-            { headers: { "x-auth-token": token } }
+            { headers: { "x-auth-token": token } },
           );
           const event = res.data;
           setFormData({
             title: event.title,
-            date: event.date ? new Date(event.date).toISOString().split("T")[0] : "",
+            date: event.date
+              ? new Date(event.date).toISOString().split("T")[0]
+              : "",
             format: event.format,
             description: event.description,
             meetingLink: event.meetingLink || "",
@@ -90,20 +93,20 @@ const SubmitEventProposalPage = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      
+
       if (isEditing) {
-        await axios.put(
+        await API.put(
           import.meta.env.VITE_SERVER_DOMAIN + `/api/events/${id}`,
           formData,
-          { headers: { "x-auth-token": token } }
+          { headers: { "x-auth-token": token } },
         );
         toast.success("Event updated successfully!");
         navigate(`/events/${id}`);
       } else {
-        await axios.post(
+        await API.post(
           import.meta.env.VITE_SERVER_DOMAIN + "/api/events/proposal",
           formData,
-          { headers: { "x-auth-token": token } }
+          { headers: { "x-auth-token": token } },
         );
         toast.success("Proposal submitted successfully!");
         navigate("/events");
@@ -118,7 +121,7 @@ const SubmitEventProposalPage = () => {
   // If the user hasn't loaded yet (or if they are a student being redirected),
   // show a blank screen/loading state so they don't see the form flash.
   if (!user || user.graduationYear > new Date().getFullYear()) {
-    return <div className="min-h-screen bg-slate-50"></div>; 
+    return <div className="min-h-screen bg-slate-50"></div>;
   }
 
   return (
@@ -129,7 +132,9 @@ const SubmitEventProposalPage = () => {
             {isEditing ? "Edit Event" : "Host an Event"}
           </h1>
           <p className="mt-2 text-slate-600">
-            {isEditing ? "Update your event details below." : "Share your knowledge or bring the community together."}
+            {isEditing
+              ? "Update your event details below."
+              : "Share your knowledge or bring the community together."}
           </p>
         </div>
 
@@ -173,7 +178,9 @@ const SubmitEventProposalPage = () => {
                 className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
               >
                 <option value="Webinar (Online)">Webinar (Online)</option>
-                <option value="Workshop (In-person)">Workshop (In-person)</option>
+                <option value="Workshop (In-person)">
+                  Workshop (In-person)
+                </option>
                 <option value="Meetup/Networking">Meetup/Networking</option>
                 <option value="Reunion">Reunion</option>
               </select>
@@ -214,7 +221,10 @@ const SubmitEventProposalPage = () => {
             </label>
             <div className="flex gap-4 mt-2">
               {["Projector/AV", "Auditorium", "Zoom License"].map((item) => (
-                <label key={item} className="flex items-center space-x-2 cursor-pointer">
+                <label
+                  key={item}
+                  className="flex items-center space-x-2 cursor-pointer"
+                >
                   <input
                     type="checkbox"
                     value={item}
@@ -234,7 +244,11 @@ const SubmitEventProposalPage = () => {
               disabled={loading}
               className="w-full bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 transition shadow-lg disabled:opacity-50 cursor-pointer"
             >
-              {loading ? "Saving..." : isEditing ? "Save Changes" : "Submit Proposal"}
+              {loading
+                ? "Saving..."
+                : isEditing
+                  ? "Save Changes"
+                  : "Submit Proposal"}
             </button>
           </div>
         </form>
