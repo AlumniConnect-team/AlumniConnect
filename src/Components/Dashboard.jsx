@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import API from "../config";
 
 const Dashboard = () => {
   const [data, setData] = useState(null);
@@ -25,16 +26,16 @@ const Dashboard = () => {
           Authorization: `Bearer ${token}`,
         };
 
-        const profileRes = await axios.get(
+        const profileRes = await API.get(
           import.meta.env.VITE_SERVER_DOMAIN + "/api/profile/dashboard",
-          { headers }
+          { headers },
         );
         setData(profileRes.data);
 
         try {
-          const eventsRes = await axios.get(
+          const eventsRes = await API.get(
             import.meta.env.VITE_SERVER_DOMAIN + "/api/events/my-events",
-            { headers }
+            { headers },
           );
           setMyEvents({
             registered: eventsRes.data.registeredEvents || [],
@@ -46,7 +47,7 @@ const Dashboard = () => {
       } catch (err) {
         setError(
           err.response?.data?.msg ||
-            "Failed to load dashboard data. (Authorization Error)"
+            "Failed to load dashboard data. (Authorization Error)",
         );
       } finally {
         setLoading(false);
@@ -109,7 +110,9 @@ const Dashboard = () => {
             <h1 className="text-3xl font-extrabold text-slate-800">
               {isAlumni ? "Alumni Console" : "Student Portal"}
             </h1>
-            <p className="text-slate-500">Welcome back, {data.user.name || data.user.fullName}</p>
+            <p className="text-slate-500">
+              Welcome back, {data.user.name || data.user.fullName}
+            </p>
           </div>
           <div
             className={`px-4 py-2 rounded-full text-sm font-bold ${
@@ -127,7 +130,9 @@ const Dashboard = () => {
             <>
               <StatCard
                 title="Total Juniors"
-                value={data.stats?.totalStudents || data.stats?.studentsEnrolled || 0}
+                value={
+                  data.stats?.totalStudents || data.stats?.studentsEnrolled || 0
+                }
                 icon="👨‍🎓"
                 color="blue"
               />
@@ -154,13 +159,17 @@ const Dashboard = () => {
             <>
               <StatCard
                 title="Alumni Network"
-                value={data.stats?.totalAlumni || data.stats?.seniorsFollowed || 0}
+                value={
+                  data.stats?.totalAlumni || data.stats?.seniorsFollowed || 0
+                }
                 icon="🤝"
                 color="blue"
               />
               <StatCard
                 title="Connections"
-                value={data.stats?.connections || data.stats?.unreadMessages || 0}
+                value={
+                  data.stats?.connections || data.stats?.unreadMessages || 0
+                }
                 icon="📩"
                 color="indigo"
               />
@@ -187,7 +196,9 @@ const Dashboard = () => {
             </h2>
             {upcomingEvents.length === 0 ? (
               <div className="text-slate-500 italic p-4 border-2 border-dashed rounded-lg text-center flex flex-col items-center justify-center">
-                <span className="mb-2">You haven't registered for any upcoming events.</span>
+                <span className="mb-2">
+                  You haven't registered for any upcoming events.
+                </span>
                 <button
                   onClick={() => navigate("/events")}
                   className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-bold mt-2 hover:bg-blue-100 transition"
@@ -287,7 +298,9 @@ const Dashboard = () => {
                         key={event._id}
                         className="p-5 bg-blue-50/50 rounded-xl border border-blue-100 hover:shadow-md transition flex flex-col"
                       >
-                        <p className="font-bold text-slate-800 text-lg mb-1">{event.title}</p>
+                        <p className="font-bold text-slate-800 text-lg mb-1">
+                          {event.title}
+                        </p>
                         <p className="text-sm text-slate-600 mb-3 font-medium">
                           {new Date(event.date).toLocaleDateString("en-US", {
                             year: "numeric",
@@ -295,16 +308,24 @@ const Dashboard = () => {
                             day: "numeric",
                           })}
                         </p>
-                        
+
                         <div className="mt-auto space-y-2 pt-3 border-t border-blue-100">
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-500 font-medium">Status</span>
-                            <span className={`text-xs font-bold px-2 py-1 rounded ${isCompleted ? 'bg-slate-200 text-slate-700' : 'bg-green-100 text-green-700'}`}>
-                              {isCompleted ? "Completed" : (event.status || "Upcoming")}
+                            <span className="text-sm text-slate-500 font-medium">
+                              Status
+                            </span>
+                            <span
+                              className={`text-xs font-bold px-2 py-1 rounded ${isCompleted ? "bg-slate-200 text-slate-700" : "bg-green-100 text-green-700"}`}
+                            >
+                              {isCompleted
+                                ? "Completed"
+                                : event.status || "Upcoming"}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-sm text-slate-500 font-medium">Attendees</span>
+                            <span className="text-sm text-slate-500 font-medium">
+                              Attendees
+                            </span>
                             <span className="text-sm font-bold text-slate-800 bg-white px-2 py-0.5 rounded shadow-sm">
                               {event.attendees?.length || 0}
                             </span>
