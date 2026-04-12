@@ -13,7 +13,7 @@ import ScrollToTop from "./Components/ScrollToTop";
 import JobReferrals from "./Components/jobs&Referral/JobReferrals";
 import { Toaster } from "react-hot-toast";
 import { UserProvider } from "./context/UserContext";
-import Profile from "./Components/profile/Profile";
+import Profile from "./Components/profile/profile";
 import Updatepwd from "./Components/forgotpassword";
 import JobDetails from "./Components/jobs&Referral/JobDetails";
 import Dashboard from "./Components/Dashboard";
@@ -46,9 +46,12 @@ function App() {
                 />
                 <Route path="guidelines" element={<HostGuidelinesPage />} />
                 <Route path="/events/:id" element={<EventDetails />} />
-                <Route path="/events/edit/:id" element={<SubmitEventProposalPage />} />
+                <Route
+                  path="/events/edit/:id"
+                  element={<SubmitEventProposalPage />}
+                />
               </Route>
-              <Route path="/profile/:id" element={<UserProfile/>} />
+              <Route path="/profile/:id" element={<UserProfile />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/profile" element={<Profile />} />
