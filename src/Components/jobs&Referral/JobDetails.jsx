@@ -22,8 +22,17 @@ const JobDetails = () => {
         });
         setJob(res.data);
       } catch (error) {
-        toast.error("Failed to load job details.");
-        navigate("/jobs"); 
+        // --- NEW 401 CATCH BLOCK ---
+        if (error.response && error.response.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+        } else {
+          toast.error("Failed to load job details.");
+          navigate("/jobs"); 
+        }
+        // ----------------------------
       } finally {
         setIsLoading(false);
       }
@@ -43,7 +52,16 @@ const JobDetails = () => {
       toast.success("Job deleted successfully");
       navigate("/jobs");
     } catch (error) {
-      toast.error(error.response?.data?.error || "Failed to delete job");
+      // --- NEW 401 CATCH BLOCK ---
+      if (error.response && error.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        toast.error(error.response?.data?.error || "Failed to delete job");
+      }
+      // ----------------------------
     }
   };
 

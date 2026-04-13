@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast"; // <-- Added to show redirect message
 
 const Dashboard = () => {
   const [data, setData] = useState(null);
@@ -17,6 +18,7 @@ const Dashboard = () => {
         if (!token) {
           setError("No token found. Please log in.");
           setLoading(false);
+          navigate("/login"); // Force redirect if no token is found on mount
           return;
         }
 
@@ -41,19 +43,32 @@ const Dashboard = () => {
             hosted: eventsRes.data.hostedEvents || [],
           });
         } catch (eventErr) {
+          // If specifically the events call fails with 401, handle it here
+          if (eventErr.response && eventErr.response.status === 401) {
+            throw eventErr; // Throw it to the outer catch block to handle redirect
+          }
           console.error(eventErr);
         }
       } catch (err) {
-        setError(
-          err.response?.data?.msg ||
-            "Failed to load dashboard data. (Authorization Error)"
-        );
+        // --- NEW 401 CATCH BLOCK ---
+        if (err.response && err.response.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+        } else {
+          setError(
+            err.response?.data?.msg ||
+              "Failed to load dashboard data. (Authorization Error)"
+          );
+        }
+        // ----------------------------
       } finally {
         setLoading(false);
       }
     };
     fetchDashboardData();
-  }, []);
+  }, [navigate]); // Added navigate to dependencies
 
   if (loading) {
     return (

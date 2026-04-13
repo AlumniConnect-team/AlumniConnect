@@ -122,6 +122,16 @@ const JobReferrals = () => {
       });
       if (Array.isArray(res.data)) setJobList(res.data);
     } catch (error) {
+      // --- NEW 401 CATCH BLOCK ---
+      if (error.response && error.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        toast.error("Failed to load jobs");
+      }
+      // ----------------------------
     }
   };
 
@@ -140,8 +150,17 @@ const JobReferrals = () => {
       setJobList(jobList.filter((job) => job._id !== jobId));
       toast.success("Job deleted successfully");
     } catch (error) {
-      console.log(error);
-      toast.error(error.response?.data?.error || "Failed to delete job");
+      // --- NEW 401 CATCH BLOCK ---
+      if (error.response && error.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.log(error);
+        toast.error(error.response?.data?.error || "Failed to delete job");
+      }
+      // ----------------------------
     }
   };
 

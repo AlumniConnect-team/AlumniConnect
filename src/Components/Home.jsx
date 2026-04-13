@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { UserContext } from '../context/UserContext'; 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // <-- Added useNavigate
 import toast from 'react-hot-toast';
 
 const Home = () => {
   const { user, setUser } = useContext(UserContext);
+  const navigate = useNavigate(); // <-- Initialize navigate
   const [allUsers, setAllUsers] = useState([]); 
   const [displayList, setDisplayList] = useState([]); 
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,7 +29,16 @@ const Home = () => {
       setAllUsers(res.data);
       setLoading(false);
     } catch (err) {
-      console.log(err);
+      // Note: /search-alumni might not be protected by authMiddleware in your backend
+      // But if it is, we catch the 401 here just in case.
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.log(err);
+      }
       setLoading(false);
     }
   };
@@ -95,8 +105,58 @@ const Home = () => {
 
       toast.success("Connection request sent!");
     } catch (err) {
-      console.log(err);
-      toast.error(err.response?.data?.error || "Failed to send request");
+      // --- NEW 401 CATCH BLOCK ---
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.log(err);
+        toast.error(err.response?.data?.error || "Failed to send request");
+      }
+      // ----------------------------
+    }
+  };
+
+
+  // --- NEW DISCONNECT FUNCTION ---
+  const handleDisconnect = async (targetId) => {
+    // Optional: Add a confirmation dialog so users don't accidentally click it
+    if (!window.confirm("Are you sure you want to remove this connection?")) return;
+
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.post(
+        `${import.meta.env.VITE_SERVER_DOMAIN}/api/connect/disconnect/${targetId}`, 
+        {}, 
+        { headers: { "x-auth-token": token } } 
+      );
+      
+      // 1. Update global user state with the new connections array (minus the removed user)
+      setUser(prevUser => ({
+        ...prevUser,
+        connections: res.data.connections
+      }));
+
+      // 2. Update local storage so the state persists on page refresh
+      const storedUser = JSON.parse(localStorage.getItem("user"));
+      storedUser.connections = res.data.connections;
+      localStorage.setItem("user", JSON.stringify(storedUser));
+
+      toast.success("Connection removed.");
+    } catch (err) {
+      // --- NEW 401 CATCH BLOCK ---
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.log(err);
+        toast.error(err.response?.data?.error || "Failed to disconnect");
+      }
+      // ----------------------------
     }
   };
 
@@ -113,8 +173,17 @@ const Home = () => {
       setSentRequests([...sentRequests, targetId]);
       toast.success("Vouch request sent successfully!");
     } catch (err) {
-      console.log(err);
-      toast.error(err.response?.data?.error || "Failed to send request");
+      // --- NEW 401 CATCH BLOCK ---
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.log(err);
+        toast.error(err.response?.data?.error || "Failed to send request");
+      }
+      // ----------------------------
     }
   };
 
@@ -285,7 +354,7 @@ const Home = () => {
             placeholder={`Search names...`}
             value={searchTerm}
             onChange={handleSearchChange}
-            className="w-full max-w-lg px-8 py-4 rounded-full border-none shadow-xl text-slate-900 focus:ring-4 focus:ring-blue-500/50 focus:outline-none text-lg placeholder-gray-400"
+            className="w-full max-w-lg px-8 py-4 rounded-full border-none shadow-xl text-white focus:ring-4 focus:ring-blue-500/50 focus:outline-none text-lg placeholder-gray-400"
           />
         </div>
       </div>
@@ -340,25 +409,30 @@ const Home = () => {
                           </Link>
                           
                           {/* UPDATED BUTTON LOGIC */}
-                          <button 
-                            onClick={() => !isConnected && !isPending && handleConnectRequest(person._id)}
-                            disabled={isConnected || isPending}
-                            className={`flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md flex items-center justify-center gap-1.5
-                              ${isConnected 
-                                ? "bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default" 
-                                : isPending
-                                ? "bg-slate-100 text-slate-500 border border-slate-200 cursor-default"
-                                : "bg-slate-900 text-white hover:bg-blue-600 border border-transparent cursor-pointer shadow-lg hover:shadow-xl active:scale-95"
-                              }`}
-                          >
-                            {isConnected ? (
-                              <><span>✓</span> Connected</>
-                            ) : isPending ? (
-                              <><span>⏳</span> Pending</>
-                            ) : (
-                              <><span>+</span> Connect</>
-                            )}
-                          </button>
+                          {/* UPDATED BUTTON LOGIC WITH DISCONNECT */}
+                          {isConnected ? (
+                            <button 
+                              onClick={() => handleDisconnect(person._id)}
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md flex items-center justify-center gap-1.5 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:text-red-700 cursor-pointer"
+                              title="Click to Disconnect"
+                            >
+                              <span>✕</span> Disconnect
+                            </button>
+                          ) : isPending ? (
+                            <button 
+                              disabled
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md flex items-center justify-center gap-1.5 bg-slate-100 text-slate-500 border border-slate-200 cursor-default"
+                            >
+                              <span>⏳</span> Pending
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => handleConnectRequest(person._id)}
+                              className="flex-1 py-2.5 rounded-xl font-semibold text-sm transition-all shadow-md flex items-center justify-center gap-1.5 bg-slate-900 text-white hover:bg-blue-600 border border-transparent cursor-pointer hover:shadow-xl active:scale-95"
+                            >
+                              <span>+</span> Connect
+                            </button>
+                          )}
 
                         </div>
                       </div>

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { UserContext } from '../context/UserContext'; // Adjust path if needed
+import { UserContext } from '../context/UserContext'; 
 import { useNavigate } from 'react-router-dom';
 
 const Notifications = () => {
@@ -38,8 +38,17 @@ const Notifications = () => {
       });
 
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.error || "Failed to approve request.");
+      // --- NEW 401 CATCH BLOCK ---
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.error(err);
+        toast.error(err.response?.data?.error || "Failed to approve request.");
+      }
+      // ----------------------------
     }
   };
 
@@ -60,15 +69,24 @@ const Notifications = () => {
         const updatedUser = { 
             ...prevUser, 
             notifications: updatedNotifications,
-            connections: res.data.connections // Update connections in state!
+            connections: res.data.connections 
         };
         localStorage.setItem("user", JSON.stringify(updatedUser));
         return updatedUser;
       });
 
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.error || "Failed to accept connection.");
+      // --- NEW 401 CATCH BLOCK ---
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.error(err);
+        toast.error(err.response?.data?.error || "Failed to accept connection.");
+      }
+      // ----------------------------
     }
   };
 
@@ -95,14 +113,12 @@ const Notifications = () => {
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {/* .slice().reverse() ensures the newest notifications appear at the top */}
               {user.notifications?.slice().reverse().map((notif) => (
                 <div 
                   key={notif._id} 
                   className={`p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${!notif.isRead ? 'bg-blue-50/30' : 'bg-white'}`}
                 >
                   <div className="flex items-start gap-4">
-                    {/* Icon based on notification type */}
                     <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm border border-slate-100 bg-white text-2xl">
                       {notif.type === "VOUCH_REQUEST" ? "🤝" : notif.type === "VOUCH_APPROVED" ? "✅" : "🔔"}
                     </div>
@@ -119,7 +135,6 @@ const Notifications = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons specific to the notification type */}
                   {notif.type === "VOUCH_REQUEST" && (
                     <button 
                       onClick={() => handleApprove(notif.fromUser, notif._id)}

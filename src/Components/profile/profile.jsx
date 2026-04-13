@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom"; // <-- Added import for redirection
 import { UserContext } from "../../context/UserContext"; // <-- Imported Context
 
 const Profile = () => {
   const { setUser } = useContext(UserContext); // <-- Grab setUser to update global state
+  const navigate = useNavigate(); // <-- Initialize navigate
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -50,12 +52,21 @@ const Profile = () => {
         }
 
       } catch (err) {
-        console.error(err);
-        toast.error("Failed to load profile data");
+        // --- NEW 401 CATCH BLOCK ---
+        if (err.response && err.response.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          navigate("/login");
+        } else {
+          console.error(err);
+          toast.error("Failed to load profile data");
+        }
+        // ----------------------------
       }
     };
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -106,8 +117,17 @@ const Profile = () => {
       // --------------------------------------------------------------
 
     } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.msg || "Update failed");
+      // --- NEW 401 CATCH BLOCK ---
+      if (err.response && err.response.status === 401) {
+        toast.error("Session expired. Please log in again.");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      } else {
+        console.error(err);
+        toast.error(err.response?.data?.msg || "Update failed");
+      }
+      // ----------------------------
     } finally {
       setLoading(false);
     }
