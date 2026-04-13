@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ChatSidebar from "./ChatSidebar";
+import ChatSidebar from "./chatsidebar";
 import MessageContainer from "./messagecontainer"; 
 
 const ChatPage = () => {
