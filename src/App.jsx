@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { useEffect, useState } from "react"; // ADDED IMPORT
+import { useEffect, useState } from "react";
 import Navbar from "./Components/Nav";
 import Home from "./Components/Home";
 import "./App.css";
@@ -64,18 +64,20 @@ function App() {
                   />
                   <Route path="guidelines" element={<HostGuidelinesPage />} />
                   <Route path="/events/:id" element={<EventDetails />} />
-                  <Route path="/events/edit/:id" element={<SubmitEventProposalPage />} />
+                  <Route
+                    path="/events/edit/:id"
+                    element={<SubmitEventProposalPage />}
+                  />
                 </Route>
-                <Route path="/profile/:id" element={<UserProfile/>} />
+                <Route path="/profile/:id" element={<UserProfile />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/jobs" element={<JobReferrals />} />
                 <Route path="/jobs/:id" element={<JobDetails />} />
-                
+
                 {/* 4. ADD YOUR CHAT ROUTE HERE */}
                 <Route path="/chat" element={<ChatPage />} />
-                
               </Routes>
             </div>
           </Router>
