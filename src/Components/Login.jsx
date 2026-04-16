@@ -30,7 +30,7 @@ const Login = () => {
       .post(import.meta.env.VITE_SERVER_DOMAIN + "/login", finalData)
       .then((res) => {
         toast.success("Authentication successful");
-        loginUser(res.data.user, res.data.token); 
+        loginUser(res.data.user, res.data.token);
         navigate("/");
       })
       .catch((err) => {
@@ -43,7 +43,7 @@ const Login = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 transition-colors duration-300 font-sans">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-           <span className="text-5xl">🎓</span>
+          <span className="text-5xl">🎓</span>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           Welcome Back
@@ -83,7 +83,10 @@ const Login = () => {
                   Password
                 </label>
                 <div className="text-sm">
-                  <Link to="/updatepwd" className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500">
+                  <Link
+                    to="/updatepwd"
+                    className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-500"
+                  >
                     Forgot password?
                   </Link>
                 </div>
@@ -119,30 +122,6 @@ const Login = () => {
               </button>
             </div>
           </form>
-
-          <div className="mt-8">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-300 dark:border-slate-700"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-medium transition-colors">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button className="w-full inline-flex justify-center py-3 px-4 border border-slate-300 dark:border-slate-600 rounded-xl shadow-sm bg-white dark:bg-slate-900 text-sm font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-[0.98]">
-                <img
-                  className="h-5 w-5"
-                  src="https://www.svgrepo.com/show/475656/google-color.svg"
-                  alt="Google"
-                />
-                <span className="ml-3">Sign in with Google</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
