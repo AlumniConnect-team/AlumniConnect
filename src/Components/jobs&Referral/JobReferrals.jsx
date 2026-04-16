@@ -250,7 +250,7 @@ const JobReferrals = () => {
               </div>
 
               <ApiAutocomplete
-                label="Job Roles (Live API)"
+                label="Job Roles"
                 placeholder="Type role..."
                 apiType="job"
                 onSelect={(val) => !selectedRoles.includes(val) && setSelectedRoles([...selectedRoles, val])}
@@ -265,7 +265,7 @@ const JobReferrals = () => {
               </div>
 
               <ApiAutocomplete
-                label="Locations (Live API)"
+                label="Locations"
                 placeholder="Type city..."
                 apiType="location"
                 onSelect={(val) => !selectedLocations.includes(val) && setSelectedLocations([...selectedLocations, val])}
