@@ -205,7 +205,7 @@ const MessageContainer = ({ selectedUser, authUser, onBack }) => {
                                 {msg.fileType === "resume" ? "Shared_Resume.pdf" : "Attachment"}
                             </span>
                             <a 
-                                href={`${import.meta.env.VITE_SERVER_DOMAIN}/${msg.fileUrl.replace(/\\/g, "/")}`} 
+                                href={msg.fileUrl.startsWith("http") ? msg.fileUrl : `${import.meta.env.VITE_SERVER_DOMAIN}/${msg.fileUrl.replace(/\\/g, "/")}`}
                                 target="_blank" 
                                 rel="noreferrer"
                                 className={`text-[10px] font-black uppercase tracking-widest underline transition-colors ${
