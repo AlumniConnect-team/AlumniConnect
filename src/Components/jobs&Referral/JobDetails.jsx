@@ -63,6 +63,56 @@ const JobDetails = () => {
     }
   };
 
+const handleRequestReferral = async () => {
+  // 1. Validation: Check if the student has a resume uploaded
+  if (!user.resume) {
+    return toast.error("Please upload your resume in your Profile before requesting a referral.");
+  }
+
+  // 2. Prevent requesting from yourself (for testing/logic)
+  if (user._id === job.creatorId) {
+    return toast.error("You cannot request a referral from yourself!");
+  }
+
+  // 3. Connection Check
+  if (!user.connections.includes(job.creatorId)) {
+    return toast.error(`You must be connected with ${job.postedBy} to request a referral.`);
+  }
+
+  const confirmRequest = window.confirm(
+    `This will send a professional message to ${job.postedBy} along with your resume. Proceed?`
+  );
+
+  if (!confirmRequest) return;
+
+  try {
+    const token = localStorage.getItem("token");
+    
+    // Construct the professional message
+    const referralMessage = `Hi ${job.postedBy}, I saw your posting for the ${job.role} role at ${job.company}. I am very interested and would appreciate it if you could refer me. My resume is attached for your review. Thanks!`;
+
+    // The payload matches the new MessageController logic
+    const payload = {
+      message: referralMessage,
+      existingFileUrl: user.resume, // Sending the path stored in DB
+      fileType: "resume"
+    };
+
+    const res = await axios.post(
+      `${import.meta.env.VITE_SERVER_DOMAIN}/api/messages/send/${job.creatorId}`,
+      payload,
+      { headers: { "x-auth-token": token } }
+    );
+
+    if (res.status === 201) {
+      toast.success("Referral request sent to chat!");
+      navigate("/chat"); // Redirect to show the sent message
+    }
+  } catch (error) {
+    toast.error(error.response?.data?.error || "Failed to send referral request.");
+  }
+};
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center transition-colors duration-300">
@@ -188,7 +238,7 @@ const JobDetails = () => {
                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Class of {job.batch}</p>
               </div>
               {job.referralAvailable && (
-                <button className="w-full sm:w-auto bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]">
+                <button onClick={handleRequestReferral} className="w-full sm:w-auto bg-white dark:bg-slate-800 border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-400 px-6 py-3 rounded-xl font-bold shadow-sm hover:bg-blue-50 dark:hover:bg-slate-700 transition-colors active:scale-[0.98]">
                   Request Referral
                 </button>
               )}
