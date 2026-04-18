@@ -5,8 +5,8 @@ export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true); // <-- NEW: Loading state
 
-  // Helper function to decode the token and check expiration
   const isTokenExpired = (token) => {
     if (!token) return true;
     try {
@@ -26,7 +26,6 @@ export const UserProvider = ({ children }) => {
 
     if (storedUser && storedToken) {
       if (isTokenExpired(storedToken)) {
-        console.log("Initial check: Session expired.");
         logoutUser(); 
       } else {
         setUser(JSON.parse(storedUser)); 
@@ -34,6 +33,8 @@ export const UserProvider = ({ children }) => {
     } else if (storedUser || storedToken) {
       logoutUser();
     }
+    
+    setIsLoading(false); // <-- NEW: Tell the app we are done checking
   }, []);
 
   const loginUser = (backendData, token) => {
@@ -65,19 +66,15 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // --- NEW: REFRESH USER FUNCTION ---
-  // Call this after accepting/rejecting connections to pull fresh data
   const refreshUser = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      // NOTE: Ensure you have an endpoint like app.get("/api/auth/me") in your backend
-      // that returns the current logged-in user's complete profile.
       const res = await axios.get(`${import.meta.env.VITE_SERVER_DOMAIN}/api/auth/me`, {
         headers: { "x-auth-token": token }
       });
-      loginUser(res.data, token); // Update context and localStorage
+      loginUser(res.data, token); 
     } catch (error) {
       console.error("Failed to refresh user data", error);
     }
@@ -90,7 +87,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, loginUser, logoutUser, refreshUser }}>
+    <UserContext.Provider value={{ user, setUser, loginUser, logoutUser, refreshUser, isLoading }}>
       {children}
     </UserContext.Provider>
   );
