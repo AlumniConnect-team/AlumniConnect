@@ -5,7 +5,7 @@ export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true); // <-- NEW: Loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   const isTokenExpired = (token) => {
     if (!token) return true;
@@ -26,15 +26,21 @@ export const UserProvider = ({ children }) => {
 
     if (storedUser && storedToken) {
       if (isTokenExpired(storedToken)) {
+        console.log("Session expired.");
         logoutUser(); 
       } else {
+        // 1. Instantly load from local storage so the UI doesn't flash
         setUser(JSON.parse(storedUser)); 
+        
+        // 2. NEW: Quietly fetch the absolute latest data from MongoDB in the background
+        // This instantly catches any approved vouches, new connections, or new messages!
+        refreshUser(); 
       }
     } else if (storedUser || storedToken) {
       logoutUser();
     }
     
-    setIsLoading(false); // <-- NEW: Tell the app we are done checking
+    setIsLoading(false);
   }, []);
 
   const loginUser = (backendData, token) => {

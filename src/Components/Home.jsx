@@ -240,6 +240,11 @@ const Home = () => {
   // ==========================================
   // NORMAL VIEW: ALUMNI FEED
   // ==========================================
+
+  // --- THE GHOST BUSTER ---
+  // Count ONLY the connections that actually exist in the fetched allUsers array
+  const validConnectionsCount = allUsers.filter(u => (user.connections || []).includes(u._id)).length;
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 font-sans pb-12 transition-colors duration-300">
       <div className="bg-slate-900 dark:bg-slate-950 text-white pt-20 pb-32 px-4 text-center rounded-b-[3rem] shadow-2xl relative transition-colors">
@@ -253,7 +258,8 @@ const Home = () => {
         {/* Tab Switcher */}
         <div className="mt-10 inline-flex flex-wrap justify-center bg-slate-800 dark:bg-slate-900 p-1.5 rounded-2xl md:rounded-full border border-slate-700 shadow-xl gap-1">
             {[
-              { id: "connections", label: `My Connections (${user.connections?.length || 0})`, color: "bg-emerald-600" },
+              // --- UPDATED THIS LINE to use validConnectionsCount ---
+              { id: "connections", label: `My Connections (${validConnectionsCount})`, color: "bg-emerald-600" },
               { id: "discover_alumni", label: "Discover Alumni", color: "bg-blue-600" },
               { id: "discover_juniors", label: "Discover Juniors", color: "bg-purple-600" }
             ].map(tab => (

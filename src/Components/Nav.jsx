@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import NotificationDropdown from './NotificationDropDown';
 import { UserContext } from '../context/UserContext';
-import { ThemeContext } from '../context/ThemeContext'; 
+import { ThemeContext } from '../context/themecontext'; 
 
 const Navbar = () => {
   const navigate = useNavigate();

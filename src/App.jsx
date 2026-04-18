@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { useContext } from "react";
+// --- THE FIX IS ON THIS LINE BELOW: We imported useContext and useEffect ---
+import { useEffect, useState, useContext } from "react"; 
 import Navbar from "./Components/Nav";
 import Home from "./Components/Home";
 import "./App.css";
@@ -22,8 +23,28 @@ import EventDetails from "./Components/EVENTS/EventDetails";
 import UserProfile from "./Components/profile/UserProfile";
 import Notifications from "./Components/Notifications";
 import { SocketContextProvider } from "./context/socketcontext";
+import { SocketContext } from "./context/socketcontext"; // Added for the listener
 import ChatPage from "./Components/chatpage";
 import { ThemeProvider } from "./context/themecontext";
+
+// --- INVISIBLE REAL-TIME LISTENER ---
+const GlobalSocketListener = () => {
+  const { socket } = useContext(SocketContext);
+  const { refreshUser } = useContext(UserContext);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("connectionStateChanged", () => {
+      console.log("⚡ Real-time update received! Fetching fresh data...");
+      refreshUser(); 
+    });
+
+    return () => socket.off("connectionStateChanged");
+  }, [socket, refreshUser]);
+
+  return null; 
+};
 
 // --- DUMMY UI FOR UNAUTHENTICATED USERS ---
 const GuestFallback = ({ title, description, icon }) => {
@@ -71,12 +92,15 @@ const AuthRoute = ({ children, title, description, icon }) => {
   return children;
 };
 
-// --- APP CONTENT (Runs inside UserProvider to access context) ---
+// --- APP CONTENT ---
 const AppContent = () => {
   const { user } = useContext(UserContext);
 
   return (
     <SocketContextProvider authUser={user}>
+      {/* Our invisible real-time listener sits here! */}
+      <GlobalSocketListener /> 
+      
       <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
       <Router>
         <div className="min-h-screen transition-colors duration-300">
