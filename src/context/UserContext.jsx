@@ -5,8 +5,8 @@ export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Helper function to decode the token and check expiration
   const isTokenExpired = (token) => {
     if (!token) return true;
     try {
@@ -26,14 +26,21 @@ export const UserProvider = ({ children }) => {
 
     if (storedUser && storedToken) {
       if (isTokenExpired(storedToken)) {
-        console.log("Initial check: Session expired.");
+        console.log("Session expired.");
         logoutUser(); 
       } else {
+        // 1. Instantly load from local storage so the UI doesn't flash
         setUser(JSON.parse(storedUser)); 
+        
+        // 2. NEW: Quietly fetch the absolute latest data from MongoDB in the background
+        // This instantly catches any approved vouches, new connections, or new messages!
+        refreshUser(); 
       }
     } else if (storedUser || storedToken) {
       logoutUser();
     }
+    
+    setIsLoading(false);
   }, []);
 
   const loginUser = (backendData, token) => {
@@ -65,19 +72,15 @@ export const UserProvider = ({ children }) => {
     }
   };
 
-  // --- NEW: REFRESH USER FUNCTION ---
-  // Call this after accepting/rejecting connections to pull fresh data
   const refreshUser = async () => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     try {
-      // NOTE: Ensure you have an endpoint like app.get("/api/auth/me") in your backend
-      // that returns the current logged-in user's complete profile.
       const res = await axios.get(`${import.meta.env.VITE_SERVER_DOMAIN}/api/auth/me`, {
         headers: { "x-auth-token": token }
       });
-      loginUser(res.data, token); // Update context and localStorage
+      loginUser(res.data, token); 
     } catch (error) {
       console.error("Failed to refresh user data", error);
     }
@@ -90,7 +93,7 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ user, setUser, loginUser, logoutUser, refreshUser }}>
+    <UserContext.Provider value={{ user, setUser, loginUser, logoutUser, refreshUser, isLoading }}>
       {children}
     </UserContext.Provider>
   );
